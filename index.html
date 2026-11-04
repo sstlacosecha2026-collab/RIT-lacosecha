@@ -1,0 +1,988 @@
+<title>Reglamento La Cosecha</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: gate screen overlays a two-column document view — fixed TOC rail on desktop, collapsible <details> accordion on phones */
+:root{
+  --bg:#eef0e8;
+  --surface:#ffffff;
+  --fg:#202a21;
+  --muted:#5c6a5c;
+  --accent:#8a6a1e;
+  --accent-ink:#5c4c14;
+  --rule:#d7dcd0;
+  --shadow: 0 1px 2px rgba(32,42,33,.06), 0 8px 24px -12px rgba(32,42,33,.18);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11150f;
+    --surface:#191f16;
+    --fg:#e7ece2;
+    --muted:#9aa894;
+    --accent:#d0ab35;
+    --accent-ink:#f0d888;
+    --rule:#2a3226;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11150f; --surface:#191f16; --fg:#e7ece2; --muted:#9aa894;
+  --accent:#d0ab35; --accent-ink:#f0d888; --rule:#2a3226;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:"Source Serif 4", Georgia, "Times New Roman", serif;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent); color:#fff}
+
+a{color:inherit}
+h1,h2,h3{text-wrap:balance; font-family:"Spectral", Georgia, serif; font-weight:600; margin:0}
+.mono{font-family:"IBM Plex Mono", ui-monospace, monospace}
+
+/* ---------- Gate screen ---------- */
+#gate{
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding-block: clamp(32px,8vh,96px);
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+}
+.gate-card{
+  width:100%;
+  max-width:480px;
+  background:var(--surface);
+  border:1px solid var(--rule);
+  border-radius:4px;
+  box-shadow:var(--shadow);
+  padding:40px 36px;
+  text-align:center;
+}
+.gate-mark{
+  width:40px;height:40px;margin:0 auto 20px;
+  border:1.5px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Spectral",serif; font-weight:600; font-size:17px; color:var(--accent-ink);
+  border-radius:2px;
+}
+.gate-org{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:10px;
+}
+.gate-title{font-size:clamp(22px,4vw,28px); line-height:1.25; margin-bottom:6px}
+.gate-sub{font-size:13px; color:var(--muted); margin-bottom:24px; font-family:"IBM Plex Mono",monospace; letter-spacing:.03em}
+.gate-divider{height:1px;background:var(--rule); margin:22px 0}
+.gate-notice{
+  text-align:left;
+  font-size:14.5px; line-height:1.65; color:var(--fg);
+  margin-bottom:26px;
+}
+.gate-notice p{margin:0 0 12px}
+.gate-notice p:last-child{margin-bottom:0}
+.gate-notice strong{color:var(--accent-ink)}
+#enter-btn{
+  width:100%;
+  padding:13px 18px;
+  background:var(--fg); color:var(--bg);
+  border:none; border-radius:3px;
+  font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.04em; text-transform:uppercase;
+  cursor:pointer;
+}
+#enter-btn:hover{background:var(--accent-ink)}
+#enter-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.gate-foot{margin-top:16px; font-size:11.5px; color:var(--muted)}
+
+/* ---------- Document shell ---------- */
+#doc{display:none}
+#doc.active{display:block}
+
+.ribbon{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+  background:var(--fg); color:var(--bg);
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  text-align:center;
+  padding:7px 16px;
+}
+
+.doc-header{
+  padding: 28px max(16px, env(safe-area-inset-left,0px)) 24px max(16px, env(safe-area-inset-right,0px));
+  border-bottom:1px solid var(--rule);
+}
+.doc-header-inner{max-width:1040px; margin:0 auto}
+.doc-org{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-ink); margin-bottom:8px}
+.doc-title{font-size:clamp(24px,4vw,34px)}
+.doc-meta{display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:12px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted)}
+
+.layout{
+  max-width:1040px; margin:0 auto;
+  display:grid; grid-template-columns:240px minmax(0,1fr); gap:0 40px;
+  padding: 28px max(16px, env(safe-area-inset-left,0px)) 80px max(16px, env(safe-area-inset-right,0px));
+}
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+}
+
+/* TOC rail (desktop) */
+.toc-rail{display:none}
+@media (min-width:861px){
+  .toc-rail{
+    display:block;
+    position:sticky; top: calc(env(safe-area-inset-top,0px) + 32px);
+    align-self:start;
+    max-height:calc(100vh - 64px);
+    overflow-y:auto;
+    padding-right:8px;
+  }
+}
+.toc-rail h2, .toc-mobile summary .toc-label{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:10px;
+}
+.toc-rail ul, .toc-mobile ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px}
+.toc-rail a, .toc-mobile a{
+  display:flex; gap:10px; align-items:baseline;
+  padding:6px 8px; border-radius:2px; text-decoration:none;
+  font-size:13px; line-height:1.35; color:var(--fg);
+}
+.toc-rail a:hover, .toc-mobile a:hover{background:var(--surface)}
+.toc-num{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--accent-ink); white-space:nowrap}
+.toc-text{color:var(--muted)}
+
+/* TOC accordion (mobile) */
+.toc-mobile{display:block; margin-bottom:28px; border:1px solid var(--rule); border-radius:4px; background:var(--surface)}
+@media (min-width:861px){ .toc-mobile{display:none} }
+.toc-mobile summary{
+  cursor:pointer; padding:14px 16px; display:flex; justify-content:space-between; align-items:center;
+  font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg);
+}
+.toc-mobile[open] summary{border-bottom:1px solid var(--rule)}
+.toc-mobile ul{padding:8px; max-height:50vh; overflow-y:auto}
+
+/* Document body typography */
+.doc-content{min-width:0; max-width:68ch}
+.doc-content .chapter{
+  margin-top:48px; margin-bottom:16px; padding-top:20px;
+  border-top:2px solid var(--rule);
+  scroll-margin-top: calc(env(safe-area-inset-top,0px) + 70px);
+}
+.doc-content .chapter:first-child{margin-top:0}
+.chapter-label{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.1em;
+  color:var(--accent-ink); margin-bottom:4px;
+}
+.chapter-title{display:block; font-size:clamp(19px,2.6vw,23px); line-height:1.3}
+
+.subtitle{font-size:16px; margin-top:28px; margin-bottom:10px; letter-spacing:.01em}
+
+.doc-content p{font-size:15.5px; line-height:1.72; margin:0 0 14px; color:var(--fg)}
+.doc-content p.article strong:first-child{color:var(--accent-ink); font-family:"Spectral",serif}
+.doc-content p.paragrafo{margin-left:18px; padding-left:14px; border-left:2px solid var(--rule); color:var(--muted); font-size:14.5px}
+.doc-content p.paragrafo strong{color:var(--fg)}
+
+.doc-list{margin:0 0 16px; padding-left:0; list-style:none; counter-reset:item; display:flex; flex-direction:column; gap:8px}
+.doc-list li{
+  position:relative; padding-left:30px; font-size:15px; line-height:1.6; color:var(--fg);
+  counter-increment:item;
+}
+.doc-list li::before{
+  content:counter(item) ".";
+  position:absolute; left:0; top:0;
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--accent-ink);
+}
+
+.doc-footer{
+  max-width:1040px; margin:0 auto; padding:32px max(16px, env(safe-area-inset-left,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-right,0px));
+  border-top:1px solid var(--rule);
+}
+.doc-footer p{font-size:12.5px; color:var(--muted); line-height:1.6; max-width:60ch; margin:0 0 8px}
+
+.back-top{
+  position:fixed; right:max(18px, env(safe-area-inset-right,0px)); bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  width:38px; height:38px; border-radius:50%;
+  background:var(--fg); color:var(--bg); border:none;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:var(--shadow); opacity:0; pointer-events:none;
+  transition:opacity .15s ease;
+  font-size:16px;
+}
+.back-top.show{opacity:1; pointer-events:auto}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-mark">LC</div>
+    <div class="gate-org">Almacén Agropecuario La Cosecha de la Unión S.A.S.</div>
+    <div class="gate-title">Reglamento Interno de Trabajo</div>
+    <div class="gate-sub">NIT 901.249.677-4 · La Unión, Nariño</div>
+    <div class="gate-divider"></div>
+    <div class="gate-notice">
+      <p>Este es un documento de <strong>uso interno</strong> de la empresa. Su contenido es confidencial y se pone a disposición exclusivamente de las personas vinculadas laboralmente con ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S.</p>
+      <p>No está autorizada su reproducción, copia o distribución a terceros ajenos a la empresa, total o parcial, por ningún medio.</p>
+    </div>
+    <button id="enter-btn" type="button">Soy trabajador de la empresa — continuar</button>
+    <div class="gate-foot">Al continuar confirmas que accedes como trabajador vinculado a la empresa.</div>
+  </div>
+</div>
+
+<div id="doc">
+  <div class="ribbon">Uso interno · Almacén Agropecuario La Cosecha de la Unión S.A.S.</div>
+
+  <header class="doc-header">
+    <div class="doc-header-inner">
+      <div class="doc-org">Almacén Agropecuario La Cosecha de la Unión S.A.S. · NIT 901.249.677-4</div>
+      <h1 class="doc-title">Reglamento Interno de Trabajo</h1>
+      <div class="doc-meta">
+        <span>La Unión, Nariño</span>
+        <span>·</span>
+        <span>89 artículos · 27 capítulos</span>
+        <span>·</span>
+        <span>Vigente desde su aprobación y publicación (Art. 86)</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc-rail" aria-label="Tabla de contenido">
+      <h2>Contenido</h2>
+      <ul>
+        <li><a href="#cap-1" class="toc-link" data-close-toc><span class="toc-num">I</span><span class="toc-text">Disposiciones generales</span></a></li>
+<li><a href="#cap-2" class="toc-link" data-close-toc><span class="toc-num">II</span><span class="toc-text">CONDICIONES DE ADMISIÓN</span></a></li>
+<li><a href="#cap-3" class="toc-link" data-close-toc><span class="toc-num">III</span><span class="toc-text">TRABAJADORES OCASIONALES, ACCIDENTALES O TRANSITORIOS</span></a></li>
+<li><a href="#cap-4" class="toc-link" data-close-toc><span class="toc-num">IV</span><span class="toc-text">CONTRATOS DE APRENDIZAJE.</span></a></li>
+<li><a href="#cap-5" class="toc-link" data-close-toc><span class="toc-num">V</span><span class="toc-text">HORARIO DE TRABAJO</span></a></li>
+<li><a href="#cap-6" class="toc-link" data-close-toc><span class="toc-num">VI</span><span class="toc-text">HORAS EXTRAS Y TRABAJO NOCTURNO</span></a></li>
+<li><a href="#cap-7" class="toc-link" data-close-toc><span class="toc-num">VII</span><span class="toc-text">DÍAS DE DESCANSO LEGALMENTE OBLIGATORIOS</span></a></li>
+<li><a href="#cap-8" class="toc-link" data-close-toc><span class="toc-num">VIII</span><span class="toc-text">VACACIONES REMUNERADAS</span></a></li>
+<li><a href="#cap-9" class="toc-link" data-close-toc><span class="toc-num">IX</span><span class="toc-text">PERMISOS Y LICENCIAS</span></a></li>
+<li><a href="#cap-10" class="toc-link" data-close-toc><span class="toc-num">X</span><span class="toc-text">LICENCIAS NO OBLIGATORIAS</span></a></li>
+<li><a href="#cap-11" class="toc-link" data-close-toc><span class="toc-num">XI</span><span class="toc-text">SALARIO MÍNIMO, CONVENCIONAL, LUGAR, DÍAS, HORAS DE PAGOS Y PERIODOS QUE LO REGULEN.</span></a></li>
+<li><a href="#cap-12" class="toc-link" data-close-toc><span class="toc-num">XII</span><span class="toc-text">SERVICIOS MÉDICOS, MEDIDAS DE SEGURIDAD, RIESGOS PROFESIONALES, PRIMEROS AUXILIOS EN CASO DE ACCIDENTES DE TRABAJO, NORMAS SOBRE LABORES EN ORDEN A LA MAYOR HIGIENE, REGULARIDAD Y SEGURIDAD EN EL TRABAJO</span></a></li>
+<li><a href="#cap-13" class="toc-link" data-close-toc><span class="toc-num">XIII</span><span class="toc-text">ORDEN JERÁRQUICO</span></a></li>
+<li><a href="#cap-14" class="toc-link" data-close-toc><span class="toc-num">XIV</span><span class="toc-text">PRESCRIPCIONES DE ORDEN</span></a></li>
+<li><a href="#cap-15" class="toc-link" data-close-toc><span class="toc-num">XV</span><span class="toc-text">LABORES PROHIBIDAS PARA MUJERES Y MENORES DE 18 AÑOS.</span></a></li>
+<li><a href="#cap-16" class="toc-link" data-close-toc><span class="toc-num">XVI</span><span class="toc-text">OBLIGACIONES ESPECIALES PARA LA EMPRESA Y LOS TRABAJADORES</span></a></li>
+<li><a href="#cap-17" class="toc-link" data-close-toc><span class="toc-num">XVII</span><span class="toc-text">PROHIBICIONES ESPECIALES PARA LA EMPRESA Y LOS TRABAJADORES</span></a></li>
+<li><a href="#cap-18" class="toc-link" data-close-toc><span class="toc-num">XVIII</span><span class="toc-text">LLAMADO DE ATENCIÓN</span></a></li>
+<li><a href="#cap-19" class="toc-link" data-close-toc><span class="toc-num">XIX</span><span class="toc-text">ESCALA DE FALTAS Y SANCIONES DISCIPLINARIAS</span></a></li>
+<li><a href="#cap-20" class="toc-link" data-close-toc><span class="toc-num">XX</span><span class="toc-text">PROCEDIMIENTOS PARA COMPROBACION DE FALTAS Y FORMAS DE APLICACIÓN DE LAS SANCIONES DISCIPLINARIAS</span></a></li>
+<li><a href="#cap-21" class="toc-link" data-close-toc><span class="toc-num">XXI</span><span class="toc-text">RECLAMOS PERSONAS ANTE QUIENES DEBE PRESENTARSE Y SU TRAMITACIÓN</span></a></li>
+<li><a href="#cap-22" class="toc-link" data-close-toc><span class="toc-num">XXII</span><span class="toc-text">MECANISMOS DE PREVENCIÓN DEL ACOSO LABORAL Y PROCEDIMIENTO INTERNO DE SOLUCIÓN</span></a></li>
+<li><a href="#cap-23" class="toc-link" data-close-toc><span class="toc-num">XXIV</span><span class="toc-text">PUBLICACIONES</span></a></li>
+<li><a href="#cap-24" class="toc-link" data-close-toc><span class="toc-num">XXV</span><span class="toc-text">VIGENCIA</span></a></li>
+<li><a href="#cap-25" class="toc-link" data-close-toc><span class="toc-num">XXVI</span><span class="toc-text">CLÁUSULAS INEFICACES</span></a></li>
+<li><a href="#cap-26" class="toc-link" data-close-toc><span class="toc-num">XXVII</span><span class="toc-text">DISPOSICIONES FINALES</span></a></li>
+      </ul>
+    </nav>
+
+    <main class="doc-content">
+      <details class="toc-mobile">
+        <summary><span class="toc-label">Tabla de contenido</span><span>＋</span></summary>
+        <ul>
+          <li><a href="#cap-1" class="toc-link" data-close-toc><span class="toc-num">I</span><span class="toc-text">Disposiciones generales</span></a></li>
+<li><a href="#cap-2" class="toc-link" data-close-toc><span class="toc-num">II</span><span class="toc-text">CONDICIONES DE ADMISIÓN</span></a></li>
+<li><a href="#cap-3" class="toc-link" data-close-toc><span class="toc-num">III</span><span class="toc-text">TRABAJADORES OCASIONALES, ACCIDENTALES O TRANSITORIOS</span></a></li>
+<li><a href="#cap-4" class="toc-link" data-close-toc><span class="toc-num">IV</span><span class="toc-text">CONTRATOS DE APRENDIZAJE.</span></a></li>
+<li><a href="#cap-5" class="toc-link" data-close-toc><span class="toc-num">V</span><span class="toc-text">HORARIO DE TRABAJO</span></a></li>
+<li><a href="#cap-6" class="toc-link" data-close-toc><span class="toc-num">VI</span><span class="toc-text">HORAS EXTRAS Y TRABAJO NOCTURNO</span></a></li>
+<li><a href="#cap-7" class="toc-link" data-close-toc><span class="toc-num">VII</span><span class="toc-text">DÍAS DE DESCANSO LEGALMENTE OBLIGATORIOS</span></a></li>
+<li><a href="#cap-8" class="toc-link" data-close-toc><span class="toc-num">VIII</span><span class="toc-text">VACACIONES REMUNERADAS</span></a></li>
+<li><a href="#cap-9" class="toc-link" data-close-toc><span class="toc-num">IX</span><span class="toc-text">PERMISOS Y LICENCIAS</span></a></li>
+<li><a href="#cap-10" class="toc-link" data-close-toc><span class="toc-num">X</span><span class="toc-text">LICENCIAS NO OBLIGATORIAS</span></a></li>
+<li><a href="#cap-11" class="toc-link" data-close-toc><span class="toc-num">XI</span><span class="toc-text">SALARIO MÍNIMO, CONVENCIONAL, LUGAR, DÍAS, HORAS DE PAGOS Y PERIODOS QUE LO REGULEN.</span></a></li>
+<li><a href="#cap-12" class="toc-link" data-close-toc><span class="toc-num">XII</span><span class="toc-text">SERVICIOS MÉDICOS, MEDIDAS DE SEGURIDAD, RIESGOS PROFESIONALES, PRIMEROS AUXILIOS EN CASO DE ACCIDENTES DE TRABAJO, NORMAS SOBRE LABORES EN ORDEN A LA MAYOR HIGIENE, REGULARIDAD Y SEGURIDAD EN EL TRABAJO</span></a></li>
+<li><a href="#cap-13" class="toc-link" data-close-toc><span class="toc-num">XIII</span><span class="toc-text">ORDEN JERÁRQUICO</span></a></li>
+<li><a href="#cap-14" class="toc-link" data-close-toc><span class="toc-num">XIV</span><span class="toc-text">PRESCRIPCIONES DE ORDEN</span></a></li>
+<li><a href="#cap-15" class="toc-link" data-close-toc><span class="toc-num">XV</span><span class="toc-text">LABORES PROHIBIDAS PARA MUJERES Y MENORES DE 18 AÑOS.</span></a></li>
+<li><a href="#cap-16" class="toc-link" data-close-toc><span class="toc-num">XVI</span><span class="toc-text">OBLIGACIONES ESPECIALES PARA LA EMPRESA Y LOS TRABAJADORES</span></a></li>
+<li><a href="#cap-17" class="toc-link" data-close-toc><span class="toc-num">XVII</span><span class="toc-text">PROHIBICIONES ESPECIALES PARA LA EMPRESA Y LOS TRABAJADORES</span></a></li>
+<li><a href="#cap-18" class="toc-link" data-close-toc><span class="toc-num">XVIII</span><span class="toc-text">LLAMADO DE ATENCIÓN</span></a></li>
+<li><a href="#cap-19" class="toc-link" data-close-toc><span class="toc-num">XIX</span><span class="toc-text">ESCALA DE FALTAS Y SANCIONES DISCIPLINARIAS</span></a></li>
+<li><a href="#cap-20" class="toc-link" data-close-toc><span class="toc-num">XX</span><span class="toc-text">PROCEDIMIENTOS PARA COMPROBACION DE FALTAS Y FORMAS DE APLICACIÓN DE LAS SANCIONES DISCIPLINARIAS</span></a></li>
+<li><a href="#cap-21" class="toc-link" data-close-toc><span class="toc-num">XXI</span><span class="toc-text">RECLAMOS PERSONAS ANTE QUIENES DEBE PRESENTARSE Y SU TRAMITACIÓN</span></a></li>
+<li><a href="#cap-22" class="toc-link" data-close-toc><span class="toc-num">XXII</span><span class="toc-text">MECANISMOS DE PREVENCIÓN DEL ACOSO LABORAL Y PROCEDIMIENTO INTERNO DE SOLUCIÓN</span></a></li>
+<li><a href="#cap-23" class="toc-link" data-close-toc><span class="toc-num">XXIV</span><span class="toc-text">PUBLICACIONES</span></a></li>
+<li><a href="#cap-24" class="toc-link" data-close-toc><span class="toc-num">XXV</span><span class="toc-text">VIGENCIA</span></a></li>
+<li><a href="#cap-25" class="toc-link" data-close-toc><span class="toc-num">XXVI</span><span class="toc-text">CLÁUSULAS INEFICACES</span></a></li>
+<li><a href="#cap-26" class="toc-link" data-close-toc><span class="toc-num">XXVII</span><span class="toc-text">DISPOSICIONES FINALES</span></a></li>
+        </ul>
+      </details>
+
+      <h2 id="cap-1" class="chapter"><span class="chapter-label">CAPÍTULO I</span></h2>
+<p class="article"><strong>ARTÍCULO 1º. </strong>El presente Reglamento Interno de Trabajo prescrito por ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S, con domicilio en el municipio de la UNION BARRIO EDUARDO SANTOS TV 2 No. 12-36 y puntos de trabajo; sus disposiciones quedan sometidas tanto la empresa como todos sus trabajadores, el cual tendrá aplicabilidad a todas las agencias y/o sucursales a nivel Municipal, Departamental y Nacional. Este reglamento hace parte de los contratos individuales de trabajo celebrados o que se celebren con todos los trabajadores, salvo estipulaciones en contrario que sin embargo sólo pueden ser favorables al trabajador. Así mismo se regulan algunas disposiciones referentes a las personas vinculadas mediante contrato de prestación de servicios, con el fin de lograr una justa y equitativa regulación de las actividades de la empresa.<strong> </strong></p>
+<h2 id="cap-2" class="chapter"><span class="chapter-label">CAPÍTULO II</span><span class="chapter-title">CONDICIONES DE ADMISIÓN</span></h2>
+<p class="article"><strong>ARTÍCULO 2º. </strong>Quien aspire a desempeñar un cargo en la empresa ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S debe hacer la solicitud por escrito para su registro como aspirante, presentar hoja de vida actualizada acompañada de los siguientes documentos:</p>
+<ol class="doc-list">
+<li><strong>1.  </strong>Cédula de ciudadanía o tarjeta de identidad según sea el caso.</li>
+<li><strong>2. </strong>Autorización escrita expedida por el Inspector de Trabajo o, en su defecto, por el Ente Territorial Local, a solicitud de los padres y a falta de estos, el defensor de familia, cuando el aspirante sea adolescentes entre los 15 y 17 años. </li>
+<li><strong>3.  </strong>Realizarse los exámenes médicos ocupacionales que haya lugar para demostrar su estado de salud, que le permita desempeñar a cabalidad el cargo designado.</li>
+<li><strong>4.  </strong>Certificado del último empleador con quien haya trabajado en que conste el tiempo de servicio y la índole de la labor ejecutada. </li>
+<li><strong>5.  </strong>Certificado de personas honorables sobre su conducta y capacidad y en su caso del plantel de educación donde hubiere estudiado. </li>
+<li><strong>6. </strong>Certificado de antecedentes judiciales, fiscales, disciplinarios, de inhabilidades y consulta de medidas correctivas. </li>
+<li><strong>7.</strong>   Tarjeta profesional (si aplica).</li>
+<li><strong>8.</strong> Certificado de estudios realizados (Título de Bachiller, técnico, tecnólogo, profesional y otros estudios complementarios).</li>
+<li><strong>9</strong>.   Certificado del fondo de pensiones con emisión no superior a 30 días. (En caso de no haber estado afiliado a ningún fondo de pensiones, indicar a qué fondo desea afiliarse). </li>
+<li><strong>10</strong>. Certificado de afiliación a EPS. </li>
+</ol>
+<p class="paragrafo"><strong>PARÁGRAFO 1: </strong>El empleador podrá establecer en el <strong>Reglamento Interno de Trabajo</strong>, o en cualquier otro instrumento, además de los documentos mencionados, todos aquellos que considere necesarios para admitir o no al aspirante. Sin embargo, tales exigencias no deben incluir documentos, certificaciones o datos prohibidos expresamente por las normas jurídicas para tal efecto: Así, es prohibida la exigencia de la inclusión en formatos o cartas de solicitud de empleo “datos acerca del estado civil de las personas, número de hijos que tenga, la religión que profesan o el partido político al cual pertenezca” (artículo 1 - Ley 13 de 1972); lo mismo que la exigencia de la prueba de gravidez para las mujeres, solo que se trate de actividades catalogadas como de alto riesgo (artículo 43, C.N., arts. 1º y 2º, Convenio Nº 111 de la OIT, Resolución 3941 de 1994 del Ministerio de Trabajo), el examen de SIDA (Decreto Reglamentario 55 de 1991, artículo 22), ni la libreta militar (artículo 111 - Decreto 2150 de 1995).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 2: </strong>Cumplidos los anteriores requisitos la Empresa no está obligada a admitir al aspirante, pero puede decidir si lo vincula o no mediante contrato de trabajo a término fijo, indefinido, por la duración de la obra o labor contratada, por prestación de servicios; o para reemplazar personal en vacaciones, en uso de licencia, para atender incrementos de producción.</p>
+<h3 class="subtitle"><strong>PERIODO DE PRUEBA</strong></h3>
+<p class="article"><strong>ARTÍCULO 3º. </strong>La empresa una vez admitida el aspirante podrá estipular en el contrato de trabajo que suscriban las partes, un período inicial de prueba que tendrá por objeto apreciar por parte de la empresa, las aptitudes del trabajador y por parte de este, las conveniencias de las condiciones de trabajo (artículo 76 C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 4°. </strong>El período de prueba debe ser estipulado por escrito y en caso contrario los servicios se entienden regulados por las normas generales del contrato de trabajo (artículo 77, núm. 1º C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 5°. </strong>El período de prueba no puede exceder de dos (2) meses. En los contratos de trabajo a término fijo, cuya duración sea inferior a 1 año, el período de prueba no podrá ser superior a la quinta parte del término inicialmente pactado para el respectivo contrato, sin que pueda exceder de dos meses. Cuando entre un mismo empleador y trabajador se celebren contratos de trabajo sucesivos, no es válida la estipulación del período de prueba, salvo para el primer contrato (artículo 7 Ley 50 de 1990).</p>
+<p class="article"><strong>ARTÍCULO 6°. </strong>Durante el período de prueba, el contrato puede darse por terminado unilateralmente en cualquier momento y sin previo aviso, pero si ha expirado el período de prueba y el trabajador continuare al servicio del empleador, con consentimiento expreso o tácito, por ese solo hecho, los servicios prestados por aquél a éste, se considerarán regulados por las normas del contrato de trabajo desde la iniciación de dicho período de prueba. Los trabajadores en período de prueba gozan de todas las prestaciones (artículo 80 C.S.T).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1. </strong>Durante el periodo de prueba, el contrato puede darse por terminado unilateralmente en cualquier momento, sin previo aviso y sin lugar a indemnización. La terminación unilateral del contrato de trabajo por parte del empleador durante la vigencia del periodo de prueba debe estar fundada en la comprobación objetiva de la falta de las competencias mínimas para el ejercicio de la labor por parte del trabajador.</p>
+<p class="article"><strong>ARTÍCULO 7°. </strong>El contrato de prestación de servicios es de carácter civil y no laboral, por lo tanto, no está sujeto a la legislación de trabajo y no es considerado un contrato con vínculo laboral al no haber relación directa entre el trabajador y empleador, por ello, no cuenta con período de prueba y no genera para el contratante la obligación de pagar prestaciones.</p>
+<h2 id="cap-3" class="chapter"><span class="chapter-label">CAPÍTULO III</span><span class="chapter-title">TRABAJADORES OCASIONALES, ACCIDENTALES O TRANSITORIOS</span></h2>
+<p class="article"><strong>ARTÍCULO 8°. </strong>Son meros trabajadores ocasionales, accidentales o transitorios, los que se ocupen en labores de corta duración no mayor de un mes y de índole distinta a las actividades normales de la empresa; quienes gozan de todas las prestaciones. (artículo 6 C.S.T), (sentencia C-823 de 2006). </p>
+<h2 id="cap-4" class="chapter"><span class="chapter-label">CAPÍTULO IV</span><span class="chapter-title">CONTRATOS DE APRENDIZAJE.</span></h2>
+<p class="article"><strong>ARTÍCULO 9°. Naturaleza y Objeto.</strong></p>
+<p>El contrato de aprendizaje, en virtud de la Ley 2466 de 2025 y el Decreto 0223 de 2026, se define como un contrato laboral especial a término fijo, mediante el cual una persona natural (aprendiz) recibe formación teórica en una entidad de formación autorizada y práctica en la empresa patrocinadora (ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S). Este contrato tiene como finalidad la adquisición de conocimientos y habilidades profesionales metódicas y completas, requeridas en el oficio, actividad u ocupación dentro del manejo administrativo, operativo, comercial o financiero propios del giro ordinario de las actividades del patrocinador. La remuneración percibida por el aprendiz, en ningún caso, podrá ser inferior al salario mínimo legal mensual vigente y constituye salario para todos los efectos legales, incluyendo el pago de prestaciones sociales y aportes al Sistema de Seguridad Social Integral.</p>
+<p class="article"><strong>ARTÍCULO 10°. Remuneración y Apoyo de Sostenimiento.</strong></p>
+<p>1.Contrato Laboral Especial de Aprendizaje: La remuneración mensual del aprendiz será equivalente, como mínimo, al salario mínimo legal mensual vigente, y se pagará de forma proporcional al tiempo de dedicación a cada una de las fases (lectiva y práctica) cuando estas se realicen de forma simultánea. Esta remuneración constituye salario para todos los efectos legales.</p>
+<p>2.Vinculación Formativa (Prácticas Laborales Universitarias): En los casos de vinculación formativa para prácticas laborales universitarias, si se pacta un auxilio de sostenimiento, este deberá constar expresamente por escrito en el acuerdo tripartito y su monto y mecanismo de entrega serán los allí definidos. Este auxilio no constituye salario, salvo que se desvirtúe su naturaleza formativa.</p>
+<p class="article"><strong>ARTÍCULO 11°. Afiliación al Sistema de Seguridad Social Integral.</strong></p>
+<p>1.Contrato Laboral Especial de Aprendizaje: La afiliación y el pago de aportes al Sistema de Seguridad Social Integral (Salud, Pensión y Riesgos Laborales) serán cubiertos plenamente por ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S desde el inicio del contrato de aprendizaje, tanto en la fase lectiva como en la fase práctica. La base de cotización será la remuneración mensual pactada con el aprendiz, la cual no podrá ser inferior al salario mínimo legal mensual vigente.</p>
+<p>2.Vinculación Formativa (Prácticas Laborales Universitarias): La afiliación al Sistema General de Riesgos Laborales (ARL) es obligatoria desde el inicio de la práctica y será cubierta por ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S. El estudiante deberá estar afiliado al Sistema General de Seguridad Social en Salud como cotizante o beneficiario durante toda la duración de la práctica.</p>
+<p class="article"><strong>ARTÍCULO 12°. Formalidades del Contrato Laboral Especial de Aprendizaje y del Acuerdo de Vinculación Formativa.</strong></p>
+<p>Ambos tipos de vinculación deberán constar por escrito y contener, como mínimo, la siguiente información:</p>
+<p><strong>Contrato Laboral Especial de Aprendizaje:</strong></p>
+<p>Razón social de la empresa ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S, número de identificación tributaria (NIT), nombre de su representante legal y el número de su cédula de ciudadanía.</p>
+<p>Razón social o nombre de la entidad de formación que atenderá la fase lectiva del aprendiz con el número de identificación tributaria (NIT), nombre del representante legal y el número de su cédula de ciudadanía.</p>
+<p>Nombre, apellido, fecha de nacimiento, tipo y número del documento de identidad del aprendiz.</p>
+<p>Estudios o clase de capacitación académica que recibe o recibirá el aprendiz.</p>
+<p>Oficio, actividad u ocupación objeto de la relación de aprendizaje, programa y duración del contrato.</p>
+<p>Duración prevista de la relación de aprendizaje, especificando las fases lectiva y práctica.</p>
+<p>Fecha prevista para la iniciación y terminación de cada fase.</p>
+<p>Monto de la remuneración mensual en moneda colombiana, que no podrá ser inferior al salario mínimo legal mensual vigente.</p>
+<p>La obligación de afiliación y pago de aportes a los sistemas de Salud, Pensión y Riesgos Laborales desde el inicio del contrato.</p>
+<p>Derechos y obligaciones del patrocinador y el aprendiz.</p>
+<p>Causales de terminación del contrato de aprendizaje.</p>
+<p>Fecha de suscripción del contrato.</p>
+<p>Firmas de las partes (empresa y aprendiz).</p>
+<p><strong>Acuerdo de Vinculación Formativa (Prácticas Laborales Universitarias):</strong></p>
+<p>Razón social de la entidad tutora (ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S), número de identificación tributaria (NIT), nombre del representante legal y el número de identificación.</p>
+<p>Nombre, apellido, fecha de nacimiento, y número del documento de identidad del practicante.</p>
+<p>En caso de que el estudiante sea adolescente entre quince (15) y diecisiete (17) años, se deberá contar con la autorización del Inspector del Trabajo.</p>
+<p>Institución Educativa en la que adelanta sus estudios.</p>
+<p>Programa académico o formativo al cual se encuentre vinculado el estudiante.</p>
+<p>Actividades que desarrollará el practicante, las cuales deben ser coherentes con su programa académico.</p>
+<p>Duración prevista de la relación de práctica conforme al programa académico o formativo, especificando fecha de inicio y fecha de terminación.</p>
+<p>Modelo de alternancia con que se adelantará la actividad formativa, para programas de formación dual.</p>
+<p>En caso de pactarse auxilio de práctica, señalarlo expresamente y disponer su mecanismo de entrega.</p>
+<p>Del responsable de la afiliación y cotización al subsistema de riesgos laborales del estudiante.</p>
+<p>Derechos y obligaciones de la entidad escenario de práctica y el estudiante.</p>
+<p>Designación del tutor de práctica por parte de la empresa y del monitor por parte de la Institución Educativa.</p>
+<p>Lugar de ejecución de las actividades prácticas.</p>
+<p>Fecha de celebración del acuerdo.</p>
+<p>Firmas de las partes (estudiante, representante legal de la empresa y representante legal de la Institución Educativa).</p>
+<p class="article"><strong>ARTÍCULO 13°. Duración del Contrato Laboral Especial de Aprendizaje y de la Vinculación Formativa.</strong></p>
+<p>Contrato Laboral Especial de Aprendizaje: Tendrá una duración máxima de dos (2) años y deberá comprender tanto la etapa lectiva o académica como la práctica o productiva. La duración específica se establecerá en el contrato de acuerdo con el programa de formación.</p>
+<p>Vinculación Formativa (Prácticas Laborales Universitarias): La duración de la práctica se ajustará al tiempo que señale el respectivo programa curricular de la institución educativa, sin que la duración total de la vinculación formativa supere el término máximo de dos (2) años.</p>
+<p class="article"><strong>ARTÍCULO 14°. Reconocimiento de Experiencia Profesional.</strong></p>
+<p>ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S certificará la práctica laboral realizada por los estudiantes universitarios bajo la modalidad de vinculación formativa como experiencia profesional válida, desde el primer día de actividad. Esta certificación deberá detallar las actividades desarrolladas y el tiempo de duración, y será reconocida para todos los efectos legales, incluyendo procesos de selección en el sector público y privado.</p>
+<p class="article"><strong>ARTÍCULO 15°. Régimen de Sanciones.</strong></p>
+<p>El incumplimiento por parte de ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S de las obligaciones derivadas del contrato laboral especial de aprendizaje o del acuerdo de vinculación formativa, así como de las cuotas de aprendizaje, la afiliación y pago de la seguridad social, o la garantía de un entorno seguro, dará lugar a las sanciones y multas establecidas en el Decreto 0223 de 2026 y demás normas concordantes. Estas sanciones incluyen multas mensuales sucesivas, pago de intereses moratorios y la posibilidad de que la vinculación formativa sea declarada como relación laboral si se desvirtúa su naturaleza.</p>
+<h2 id="cap-5" class="chapter"><span class="chapter-label">CAPÍTULO V</span><span class="chapter-title">HORARIO DE TRABAJO</span></h2>
+<p class="article"><strong>ARTÍCULO 14º. </strong>Debido a la naturaleza de la labor, el trabajador se obliga a laborar la jornada ordinaria en los turnos señalados por el empleador, pudiendo hacer éste ajustes o cambios de horario cuando lo estime conveniente, sin exceder la jornada máxima semanal de acuerdo con la Ley 2101 de 2021<strong> </strong>mediante la cual se dictan disposiciones de reducir la jornada laboral de 48 horas a 42 horas de manera progresiva sin afectar el salario, de modo que la empresa procederá a realizar su implementación de la siguiente manera: </p>
+<p>A partir del día 15 de julio del año 2025, se reduce la jornada laboral ordinaria a cuarenta y cuatro (44) horas semanales.</p>
+<p>A partir del día 15 de julio del año 2026, se reduce la jornada laboral ordinaria  a cuarenta y dos (42) horas semanales. </p>
+<p>Distribuidas en máximo seis días a la semana con un día de descanso obligatorio, que podrá coincidir con el domingo. </p>
+<p class="paragrafo"><strong>PARÁGRAFO 1. </strong>Para efecto de lo anterior, la empresa podrá distribuir la jornada de trabajo en los turnos y dentro de los horarios que determine según las necesidades de los servicios, sin que excedan las jornadas máximas contempladas en este artículo. </p>
+<p class="paragrafo"><strong>PARÁGRAFO 2. </strong>Lo referente en el presente reglamento a cuarenta y seis (46 horas semanales, después de las fechas establecidas en el presente artículo, se entenderán disminuidas al número de horas establecidas para dicho año.  </p>
+<p class="article"><strong>ARTÍCULO 15º. </strong>TRABAJO POR TURNOS. Cuando la naturaleza de la labor no exija actividad continuada y se lleve a cabo por turnos de trabajadores, la duración de la jornada puede ampliarse en más de ocho (8) horas, o en más de cuarenta y seis (44) semanales, siempre que el promedio de las horas de trabajo calculado para un período que no exceda de tres (3) semanas, no pase de ocho (8) horas diarias ni de cuarenta y cuatro (44) a la semana. Esta ampliación no constituye trabajo suplementario o de horas extras. (artículo 165 C.S.T)<strong>.        </strong></p>
+<p class="paragrafo"><strong>PARÁGRAFO 1. </strong>No habrá limitación de jornada para los empleados que desempeñen cargos de dirección, de confianza o de manejo, ni para los que se ocupen en actividades discontinuas o intermitentes o de simple vigilancia, cuando el empleado resida en el mismo lugar del trabajo, en los términos legales, todos los cuales deberán trabajar todo el tiempo que fuere necesario para cumplir ampliamente sus deberes, sin que el servicio prestado fuera del horario antes dicho constituya trabajo suplementario ni implique sobre remuneración.</p>
+<h2 id="cap-6" class="chapter"><span class="chapter-label">CAPÍTULO VI</span><span class="chapter-title">HORAS EXTRAS Y TRABAJO NOCTURNO</span></h2>
+<p class="article"><strong>ARTÍCULO 16º. </strong>TRABAJO DIURNO Y TRABAJO NOCTURNO.</p>
+<p><strong>a) </strong>Trabajo diurno es el que se realiza entre las seis horas (6:00 a.m.) y las veintiún horas (09:00 p.m.).</p>
+<p><strong>b) </strong>Trabajo nocturno es el comprendido entre las veintiún horas (09:00 p.m. ) y las seis horas (6:00 a.m.).</p>
+<p class="article"><strong>ARTÍCULO 17º. </strong>El trabajo suplementario de horas extras, es el que se excede de la jornada ordinaria y en todo caso el que excede la máxima legal (artículo 159 C.S.T).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1: </strong>El trabajo suplementario o de horas extras, a excepción de los casos señalados en el artículo 162 del Código Sustantivo del Trabajo, sólo podrá efectuarse en dos (2) horas diarias y doce (12) semanales, mediante autorización expresa del Ministerio del Trabajo y de conformidad con los convenios internacionales del trabajo ratificados. (artículo 1 Decreto 13 de 1967).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 2: </strong>Cuando la jornada de trabajo se amplíe por acuerdo entre empleadores y trabajadores a diez (10) horas diarias, no podrán en el mismo día laborar horas extras (artículo 22  Ley 50 de 1990).</p>
+<p class="article"><strong>ARTÍCULO 18º. </strong>TASAS Y LIQUIDACIÓN DE RECARGOS.</p>
+<p><strong>a) </strong>El trabajo nocturno, por el solo hecho de ser nocturno se remunera con un recargo del treinta y cinco por ciento (35%) sobre el valor del trabajo ordinario diurno, con excepción del caso de la jornada de treinta y seis (36) horas semanales prevista en el artículo 20 literal c) de la Ley 50 de 1990.</p>
+<p><strong>b) </strong>El trabajo extra diurno se remunera con un recargo del veinticinco por ciento (25%) sobre el valor del trabajo ordinario diurno.</p>
+<p><strong>c) </strong>El trabajo extra nocturno se remunera con un recargo del setenta y cinco por ciento (75%) sobre el valor del trabajo ordinario diurno.</p>
+<p><strong>d) </strong>Cada uno de los recargos antedichos se produce de manera exclusiva, es decir, sin acumularlo con alguno otro (artículo 24 Ley 50 de 1990).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1:  </strong>La empresa podrá implantar turnos especiales de trabajo nocturno, de acuerdo con lo previsto por el Decreto 2352 de 1965.</p>
+<p class="paragrafo"><strong>PARÁGRAFO 2:  </strong>El pago del trabajo suplementario o de horas extras y de recargo por trabajo nocturno, en su caso, se efectuará junto con el salario del período en que se han causado, o a más tardar con el salario del periodo siguiente (artículo 134, ordinal 2º, C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 19º. </strong>La empresa no reconocerá trabajo suplementario o de horas extras sino cuando expresamente lo autorice a sus trabajadores de acuerdo con lo establecido para tal efecto en el artículo 17° de este reglamento.</p>
+<h2 id="cap-7" class="chapter"><span class="chapter-label">CAPÍTULO VII</span><span class="chapter-title">DÍAS DE DESCANSO LEGALMENTE OBLIGATORIOS</span></h2>
+<p class="article"><strong>ARTÍCULO 20°. </strong>Serán de descanso obligatorio remunerado, un día a la semana que podrá coincidir con el domingo y días de fiesta que sean reconocidos como tales en nuestra legislación laboral.</p>
+<p><strong>a) </strong>Todo trabajador, tiene derecho al descanso remunerado en los siguientes días de fiesta de carácter civil o religioso: 1º de enero, 6 de enero, 19 de marzo, 1º de mayo, 29 de junio, 20 de julio, 7 de agosto, 15 de agosto, 12 de octubre, 1º de noviembre, 11 de noviembre, 8 y 25 de diciembre, además de los días jueves y viernes santos, Ascensión del Señor, Corpus Christi y Sagrado Corazón de Jesús.</p>
+<p><strong>b) </strong>Pero el descanso remunerado del 6 de enero, 19 de marzo, 29 de junio,</p>
+<p>15 de agosto, 12 de octubre, 1° de noviembre, 11 de noviembre, Ascensión del Señor, Corpus Christi y Sagrado Corazón de Jesús, cuando no caigan en día lunes se trasladará al lunes siguiente a dicho día.   </p>
+<p>Cuando las mencionadas festividades  caigan en domingo,  el descanso remunerado, igualmente se trasladará al lunes.</p>
+<p><strong>c) </strong>Las prestaciones y derechos que para el trabajador originen el trabajo en los días festivos, se reconocerá en relación al día de descanso remunerado establecido en el inciso anterior. (Ley 51 de 1983).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1: </strong>Cuando la jornada de trabajo convenida por las partes, en días u horas, no implique la prestación de servicios en todos los días laborables de la semana, el trabajador tendrá derecho a la remuneración del del día de descanso en proporción al  tiempo laborado (artículo 26, numeral 5 Ley 50 de 1990).</p>
+<p class="article"><strong>ARTÍCULO 21°. </strong>Trabajo en día de descanso obligatorio y festivo (artículo 179 C.S.T).</p>
+<p><strong>a) </strong>El trabajo en día de descanso obligatorio y festivos se remunerará con un recargo del setenta y cinco por ciento (75%) sobre el salario ordinario en proporción a las horas laboradas. </p>
+<p><strong>b) </strong>Si con el día de descanso obligatorio coincide otro día de descanso remunerado sólo tendrá derecho el trabajador, si trabaja, al recargo establecido en el numeral anterior. </p>
+<p><strong>c) </strong>Se exceptúa el caso de la jornada de treinta y seis (36) horas semanales previstas en el artículo 20 literal c) de la Ley 50 de 1990. </p>
+<p class="paragrafo"><strong>PARÁGRAFO 1:</strong> El trabajador podrá convenir con el empleador su día de descanso obligatorio el día sábado o domingo, que será reconocido en todos sus aspectos cómo descanso dominical obligatorio institucionalizado. </p>
+<p>Interprétese la expresión dominical contenida en el régimen laboral en este sentido exclusivamente para el efecto del descanso obligatorio. </p>
+<p>Las disposiciones contenidas en los artículos 25 y 26 se aplazarán en su aplicación frente a los contratos celebrados antes de la vigencia de la presente ley hasta el 1° de abril del año 2003.</p>
+<p class="paragrafo"><strong>PARÁGRAFO 2: </strong>Se entiende que el trabajo dominical es ocasional cuando el trabajador labora hasta dos (2) domingos durante el mes calendario. Se entiende que el trabajo dominical es habitual cuando el trabajador labore tres (3) o más domingos durante el mes calendario (artículo 26, parágrafo 2 Ley 789 de 2002).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 3</strong>: Aviso sobre trabajo dominical. Cuando se tratare de trabajos habituales o permanentes en domingo, el empleador debe fijar en lugar público del establecimiento, con anticipación de 12 horas lo menos, la relación del personal de trabajadores que por razones del servicio no pueden disponer el descanso dominical. En esta relación se incluirán también el día y las horas de descanso compensatorio (artículo 185 C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 22°. </strong>El día de descanso obligatorio y los demás días expresados en el artículo 20° de este reglamento, tiene una duración mínima de 24 horas, salvo la excepción consagrada en el literal c) del artículo 20 de la Ley 50 de 1990 (artículo 25 Ley 50 de 1990).</p>
+<p class="article"><strong>ARTÍCULO 23°. </strong>Cuando por motivo de fiesta no determinada en la Ley 51 de diciembre de 1983, la empresa suspendiere el trabajo, está obligada a pagarlo como si los hubiere realizado. Por otra parte, no está obligada a pagarlo, cuando hubiere mediado convenio expreso para la suspensión o compensación, o estuviere prevista en el reglamento, pacto, convención colectiva o fallo arbitral. Este trabajo compensatorio se remunerará sin que se entienda como trabajo suplementario o de horas extras (artículo 178 C.S.T).</p>
+<h2 id="cap-8" class="chapter"><span class="chapter-label">CAPÍTULO VIII</span><span class="chapter-title">VACACIONES REMUNERADAS</span></h2>
+<p class="article"><strong>ARTÍCULO 24°. </strong>Los trabajadores que hubieren prestado sus servicios durante un (1) año tienen derecho a quince (15) días hábiles consecutivos de vacaciones remuneradas (artículo 186, numeral 1° C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 25°. </strong>La época de vacaciones debe ser señalada por la empresa a más tardar dentro del año subsiguiente y ellas deben ser concedidas oficiosamente o a petición del trabajador, sin perjudicar el servicio y la efectividad del descanso. El empleador tiene que dar a conocer al trabajador con 15 días de anticipación la fecha en que le concederán las vacaciones (artículo 187 C.S.T).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1: </strong>Todo empleador debe de llevar un registro especial de vacaciones en el que anotará la fecha en que ha ingresado al establecimiento cada trabajador, la fecha en que toma sus vacaciones anuales y en que las termina y la remuneración recibida por las mismas (artículo 187 del C.S.T).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 2: </strong>Si se presenta interrupción justificada en el disfrute de las vacaciones, el trabajador no pierde el derecho a reanudarlas (artículo 188 del C.S.T). </p>
+<p class="article"><strong>ARTÍCULO 26º. </strong> Empleador y trabajador, podrán acordar por escrito, previa solicitud del trabajador, que se pague en dinero hasta la mitad de las vacaciones;<strong> </strong>cuando el contrato termina sin que el trabajador hubiere disfrutado de vacaciones, la compensación de éstas en dinero procederá por un año cumplido de servicios y proporcionalmente por fracción de año. En todo caso para la compensación de vacaciones, se tendrá como base el último salario devengado por el trabajador (artículo 189 C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 27º. </strong>En todo caso, el trabajador gozará anualmente, por lo menos de seis (6) días hábiles continuos de vacaciones, los que no son acumulables. Las partes pueden convenir en acumular los días restantes de vacaciones hasta por 2 años.  La acumulación puede ser hasta por 4 años, cuando se trate de trabajadores técnicos, especializados, de confianza, de manejo o de extranjeros que presten sus servicios en lugares distintos a los de la residencia de sus familiares, previo acuerdo entre el empleado y la empresa. </p>
+<p>Si el empleado goza únicamente de seis (6) días de vacaciones en un año, se presume que acumula los días restantes de vacaciones a los posteriores, de acuerdo con lo prescrito en este artículo. (artículo 190 C.S.T). </p>
+<p class="article"><strong>ARTÍCULO 28°. </strong>COMPENSACIÓN EN DINERO DE LAS VACACIONES. La Empresa y el empleado podrán acordar por escrito, previa solicitud del empleado, que se pague en dinero hasta la mitad de las vacaciones, es decir, hasta siete (7) días por cada período causado. Los ocho (8) días restantes deberán disfrutarse en tiempo.</p>
+<p>Cuando el contrato terminare sin que el empleado hubiere disfrutado del período de vacaciones, la compensación de éstas en dinero procederá de manera proporcional al tiempo laborado.</p>
+<p class="article"><strong>ARTÍCULO 29º. </strong>Durante el período de vacaciones el trabajador recibirá el salario ordinario que esté devengando el día que comience a disfrutar de ellas. En consecuencia, sólo se excluirán para la liquidación de las vacaciones el valor del trabajo en días de descanso obligatorio y el valor del trabajo suplementario o de horas extras. Cuando el salario sea variable, las vacaciones se liquidarán con el promedio de lo devengado por el trabajador en el año inmediatamente anterior a la fecha en que se concedan.</p>
+<p class="paragrafo"><strong>PARÁGRAFO: </strong>En los contratos a término fijo inferior a un (1) año, los trabajadores tendrán derecho al pago de vacaciones en proporción al tiempo laborado cualquiera que este sea (artículo 3º, parágrafo  Ley 50 de 1990).</p>
+<h2 id="cap-9" class="chapter"><span class="chapter-label">CAPÍTULO IX</span><span class="chapter-title">PERMISOS Y LICENCIAS</span></h2>
+<p class="article"><strong>ARTÍCULO 30º. </strong>PERMISOS Y LICENCIAS. La Empresa concederá a sus empleados los permisos o licencias necesarias para: </p>
+<ol class="doc-list">
+<li>El ejercicio del sufragio.	 </li>
+<li>El desempeño de cargos oficiales transitorios de forzosa aceptación. </li>
+<li>El desempeño de otros cargos oficiales transitorios de forzosa aceptación como jurado de votación, clavero o escrutador. </li>
+<li>En caso de grave calamidad doméstica debidamente comprobada. </li>
+<li>Licencia por luto. </li>
+<li>Asistir al entierro de sus compañeros de trabajo. </li>
+<li>Asistir a las consultas médicas programadas con la Entidad Promotora de Salud (en adelante EPS) o la entidad que hiciere sus veces de acuerdo con la normatividad vigente, a la cual se encuentre afiliado. </li>
+<li>Licencia de maternidad. </li>
+<li>Licencia de paternidad. </li>
+<li>Realizar estudios de interés de la empresa o por encargo de ella, siempre que no afecte la prestación normal del servicio y con previa autorización de Gerencia General. </li>
+</ol>
+<p class="article"><strong>ARTÍCULO 31º. </strong>CONDICIONES. En los casos señalados en el artículo anterior, el empleado deberá dar aviso a su jefe inmediato con la debida oportunidad para efectos de conceder el permiso o licencia, por lo tanto, la concesión de éstos estará sujeta a las siguientes condiciones: </p>
+<ol class="doc-list">
+<li><strong>1.</strong> Ejercicio del sufragio. En caso de ser necesario el desplazamiento del empleado dentro de su jornada de trabajo para el ejercicio del sufragio, la Empresa otorgará el permiso correspondiente, siempre y cuando el empleado dé aviso al jefe inmediato con la anticipación que las circunstancias permitan, por medio de correo electrónico. </li>
+</ol>
+<p>De acuerdo con las normas legales y mientras éstas tengan vigencia, todo empleado que ejerza su derecho al sufragio, podrá disfrutar de media jornada de descanso compensatorio remunerado por el tiempo que utilice para cumplir su función como elector, previa presentación del certificado electoral. El descanso compensatorio deberá ser disfrutado en el mes siguiente (30 días calendario) al día de la votación, en la fecha que acuerde el empleado con su jefe inmediato. </p>
+<ol class="doc-list">
+<li><strong>2.</strong> Desempeño de cargos oficiales transitorios de forzosa aceptación. En este caso el aviso al jefe inmediato se dará con la anticipación que las circunstancias lo permitan. </li>
+<li><strong>3.</strong> Desempeño de otros cargos oficiales transitorios de forzosa aceptación como jurado de votación, clavero o escrutador. </li>
+</ol>
+<p>La Empresa concederá al empleado que fuere nombrado como jurado de votación, clavero o escrutador, el permiso correspondiente para ejercer las labores de dicho cargo, de acuerdo con el aviso que dé a su jefe inmediato con la anticipación que las circunstancias lo permitan, por medio de correo electrónico. </p>
+<p>De acuerdo con las normas legales y mientras éstas tengan vigencia, todo empleado que desempeñare el cargo de jurado de votación y presente el certificado correspondiente, tendrá derecho a un (1) día compensatorio de descanso remunerado dentro de los cuarenta y cinco (45) días hábiles siguientes a la fecha del ejercicio del cargo, en el día que acuerde el empleado con su jefe inmediato. El empleado que desempeñe cargo de clavero y escrutador, que preste sus servicios fuera de su horario habitual de trabajo, tendrá derecho al beneficio de un (1) día compensatorio de descanso remunerado dentro de los cuarenta y cinco (45) días hábiles siguientes a la fecha del ejercicio del cargo, siempre y cuando no concurra con otra forma de compensación o beneficio. La fecha de disfrute del descanso será acordada entre el empleado y su jefe inmediato. </p>
+<ol class="doc-list">
+<li><strong>4.</strong> Grave calamidad doméstica debidamente comprobada. En la empresa, se entiende por grave calamidad doméstica todo suceso familiar cuya gravedad afecte el normal desarrollo de las actividades del trabajador, en la cual eventualmente pueden verse amenazados derechos fundamentales de importancia significativa en la vida personal o familiar del mismo, o afectada su estabilidad emocional por grave dolor moral.</li>
+</ol>
+<p>La extensión temporal durante la cual la licencia por calamidad doméstica debe ser remunerada, implica sopesar las circunstancias y particularidades de la situación concreta: de un lado, debe valorarse la gravedad de la calamidad doméstica en sí misma considerada, la posibilidad de conjurarla en determinado plazo estimado dependiendo del caso, la presencia o ausencia de otros familiares o amigos que contribuyan a superarla, la disponibilidad de recursos materiales en los que pueda apoyarse el trabajador, etc. Y de otro lado, debe tenerse en cuenta también el grado de la afectación del trabajo y de la empresa ocasionada por la suspensión de la relación laboral, la posibilidad fáctica en que esté el empleador de reemplazar temporalmente al trabajador, etc. Así pues, la ponderación de las circunstancias que rodean el caso debe llevar a establecer, bajo criterios de razonabilidad, cuál es el lapso mínimo durante el cual debe remunerarse la licencia por grave calamidad doméstica debidamente comprobada.  (Sentencia C-930-09). </p>
+<p>Toda calamidad doméstica para que proceda debe ir antecedida por aviso del empleado a su jefe inmediato a través de los medios de comunicación concertados entre ambos para comunicarse. En el aviso deberán informarse, los hechos que constituyen la grave calamidad doméstica. </p>
+<p>Corresponde al jefe inmediato, el análisis de los mismos, así como la decisión de si concede o no la licencia remunerada, lo que informará de inmediato a la persona encargada de recursos humanos y/o gerencia general, quien se pronunciará sobre la duración de ésta y notificará al empleado, acorde con las políticas de la Institución. </p>
+<p>La oportunidad del aviso al jefe inmediato se realizará al tiempo de ocurrir éste o si las circunstancias lo permiten, anticipadamente; excepcionalmente y por hechos de gravedad, puede ser posterior al hecho que lo constituye. </p>
+<ol class="doc-list">
+<li><strong>5.</strong> Licencia por luto. En caso de fallecimiento del cónyuge, compañero o compañera permanente del empleado o de un familiar hasta el grado segundo de consanguinidad (padres, abuelos, hermanos, hijos y nietos), primero de afinidad (suegros o suegras) y segundo grado civil (padres adoptantes e hijos adoptivos), la Empresa le concederá una licencia remunerada por luto de cinco (5) días hábiles o el tiempo indicado por la Ley vigente al momento del hecho (numeral 10 artículo 57 C.S.T.).  </li>
+</ol>
+<p>También gozarán de la licencia remunerada por luto el hijo, padre o madre de crianza.</p>
+<p>Este hecho deberá ser informado por el empleado ante su jefe inmediato dentro de los dos (2) días hábiles siguientes a su ocurrencia, y acreditarse ante la Empresa, dentro de los treinta (30) días hábiles siguientes al hecho, mediante comunicación escrita, anexando copia del certificado de defunción respectivo. </p>
+<ol class="doc-list">
+<li><strong>6</strong>. Asistir al entierro de sus compañeros de trabajo. En caso de fallecimiento de un compañero de trabajo, la Empresa concederá a sus empleados permiso para asistir al entierro, siempre y cuando el número de personas que se ausente, no perjudique su funcionamiento. En este caso el aviso al jefe inmediato debe darse con la anticipación que las circunstancias lo permitan. </li>
+<li><strong>7.</strong> Asistir a las consultas médicas programadas con la EPS o la entidad que hiciere sus veces de acuerdo con la normatividad vigente, a la cual se encuentre afiliado. En este caso el empleado deberá dar el aviso al jefe inmediato con no menos de tres (3) días de antelación, quien podrá o no conceder el permiso.</li>
+</ol>
+<p>Para efecto de sustentar este permiso, el trabajador deberá presentar una constancia de asistencia al servicio expedida por el médico o enfermera autorizados, en la que se indique la hora de inicio y terminación de la consulta médica. En caso de incapacidad motivada en accidente o enfermedad común o laboral, el trabajador deberá dar aviso al Jefe Inmediato y posteriormente allegará a la empresa, la incapacidad respectiva, bien sea personalmente o si por la gravedad de la enfermedad o el accidente no se puede movilizar, podrá hacerla llegar por medio de un familiar, amigo o compañero de trabajo o por cualquier otro medio tecnológico.</p>
+<ol class="doc-list">
+<li><strong>8.</strong> Licencia de maternidad: Toda trabajadora en estado de embarazo tiene derecho a una licencia de dieciocho (18) semanas en la época de parto, remunerada con el salario que devengue al momento de iniciar su licencia. </li>
+</ol>
+<p>Si se tratare de un salario que no sea fijo como en el caso del trabajo a destajo o por tarea, se tomará en cuenta el salario promedio devengado por la trabajadora en el último año de servicio, o en todo el tiempo si fuere menor. </p>
+<p>Para los efectos de la licencia de que trata este artículo, la trabajadora debe presentar al empleador un certificado médico, en el cual debe constar: </p>
+<p>a) El estado de embarazo de la trabajadora; </p>
+<p>b) La indicación del día probable del parto, y </p>
+<p>c) La indicación del día desde el cual debe empezar la licencia, teniendo en cuenta que, por lo menos, ha de iniciarse dos semanas antes del parto. </p>
+<p>Todas las provisiones y garantías establecidas en la presente ley para la madre biológica, se hacen extensivas en los mismos términos y en cuanto fuere procedente a la madre adoptante, o al padre que quede a cargo del recién nacido sin apoyo de la madre, sea por enfermedad o muerte, asimilando la fecha del parto a la de la entrega oficial del menor que se ha adoptado, o del que adquiere custodia justo después del nacimiento. En ese sentido, la licencia materna se extiende al padre en caso de fallecimiento o enfermedad de la madre, el empleador del padre del niño le concederá una licencia de duración equivalente al tiempo que falta para expirar el periodo de la licencia posterior al parto concedida a la madre. </p>
+<p>La licencia de maternidad para madres de niños prematuros, tendrá en cuenta la diferencia entre la fecha gestacional y el nacimiento a término, las cuáles serán sumadas a las dieciocho (18) semanas que se establecen en la presente ley. Cuando se trate de madres con parto múltiple, la licencia se ampliará en dos (2) semanas más. </p>
+<p>La trabajadora que haga uso de la licencia en la época del parto tomará las dieciocho (18) semanas de licencia a las que tiene derecho, de la siguiente manera: </p>
+<p>a) Licencia de maternidad preparto. Esta será de una (1) semana con anterioridad a la fecha probable del parto debidamente acreditada. Si por alguna razón médica la futura madre requiere una semana adicional previa al parto podrá gozar de las dos (2) semanas, con dieciséis (16) posparto. Si en caso diferente, por razón médica no puede tomar la semana previa al parto, podrá disfrutarlas dieciocho (18) semanas en el posparto inmediato. </p>
+<p>b) Licencia de maternidad posparto. Esta licencia tendrá una duración normal de diecisiete (17) semanas contadas desde la fecha del parto, o de dieciséis (16) o dieciocho (18) serranas por decisión médica, de acuerdo a lo previsto en el literal anterior. </p>
+<p class="paragrafo">PARÁGRAFO 1°. De las dieciocho (18) semanas de licencia remunerada, la semana anterior al probable parto será de obligatorio goce en caso de que el médico tratante prescriba algo diferente. La licencia remunerada de la que habla este artículo, es incompatible con la licencia de calamidad doméstica y en caso de haberse solicitado esta última por el nacimiento de un hijo, estos días serán descontados de la misma. (Ley 1822 de 2017). </p>
+<ol class="doc-list">
+<li><strong>9.</strong> Licencia de Paternidad: El padre tendrá derecho a dos (2) semanas de licencia remunerada de paternidad. </li>
+</ol>
+<p>La licencia remunerada de paternidad opera por los hijos nacidos del cónyuge o de la compañera permanente, así como para el padre adoptante. </p>
+<p>El único soporte válido para el otorgamiento de la licencia remunerada de paternidad es el Registro Civil de Nacimiento, el cual deberá presentarse a la EPS a más tardar dentro de los 30 días siguientes a la fecha del nacimiento del menor. </p>
+<p>La licencia remunerada de paternidad estará a cargo de la EPS y será reconocida proporcionalmente a las semanas cotizadas por el padre durante el periodo de gestación. (Ley 2114 de 2021). </p>
+<ol class="doc-list">
+<li><strong>10.</strong> Realizar estudios de interés de la empresa o por encargo de ella, siempre que no afecte la prestación normal del servicio y con previa autorización de la Gerencia General. </li>
+</ol>
+<h2 id="cap-10" class="chapter"><span class="chapter-label">CAPÍTULO X</span><span class="chapter-title">LICENCIAS NO OBLIGATORIAS</span></h2>
+<p class="article"><strong>ARTÍCULO 32º. </strong>Licencias no obligatorias. La empresa se reserva el derecho a conceder estas licencias en sus diferentes modalidades, de acuerdo con la legislación laboral, y en especial que el trabajador realice la petición con no menos de un mes de anticipación. </p>
+<h2 id="cap-11" class="chapter"><span class="chapter-label">CAPÍTULO XI</span><span class="chapter-title">SALARIO MÍNIMO, CONVENCIONAL, LUGAR, DÍAS, HORAS DE PAGOS Y PERIODOS QUE LO REGULEN.</span></h2>
+<p class="article"><strong>ARTÍCULO 33ª. </strong>FORMAS Y LIBERTAD DE ESTIPULACIÓN.</p>
+<p>El empleador y el trabajador pueden convenir libremente el salario en sus diversas modalidades como por unidad de tiempo, por obra, o a destajo y por tarea, etc., pero siempre respetando el salario mínimo legal o el fijado en los pactos, convenciones colectivas y fallos arbitrales.</p>
+<p><strong>b) </strong>No obstante lo dispuesto en los artículos 13, 14, 16, 21 y 340 del Código Sustantivo del Trabajo y las normas concordantes con éstas, cuando el trabajador devengue un salario ordinario superior a diez (10) salarios mínimos legales mensuales, valdrá la estipulación escrita de un salario que además de retribuir el trabajo ordinario, compense de antemano el valor de prestaciones, recargos y beneficios tales como el correspondiente al trabajo nocturno, extraordinario o al dominical y festivo, el de primas legales, extralegales, las cesantías y sus intereses, subsidios y suministros en especie; y, en general, las que se incluyan en dicha estipulación, excepto las vacaciones.</p>
+<p>En ningún caso el salario integral podrá ser inferior al monto de 10 salarios mínimos legales mensuales, más el factor prestacional correspondiente a la empresa que no podrá ser inferior al treinta por ciento (30%) de dicha cuantía.</p>
+<p><strong>c) </strong>Este salario no estará exento de las cotizaciones a la seguridad social, ni de los aportes al SENA, ICBF, y cajas de compensación familiar, pero la base para efectuar los aportes parafiscales es el setenta por ciento (70%).</p>
+<p><strong>d) </strong>El  trabajador  que  desee  acogerse  a  esta  estipulación,  recibirá  la liquidación definitiva de su auxilio de cesantía y demás prestaciones</p>
+<p>sociales  causadas  hasta  esa  fecha,  sin  que  por  ello  se  entienda terminado su contrato de trabajo (artículo 18  Ley 50 de 1990).</p>
+<p class="article"><strong>ARTÍCULO 34º. </strong>Se denomina jornal el salario estipulado por días y sueldo, el estipulado con períodos mayores (artículo 133 C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 35º. </strong>Salvo convenio por escrito, el pago de los salarios se efectuará en el lugar en donde el trabajador presta sus servicios durante el trabajo, o inmediatamente después del cese (numeral 1º, artículo 138 C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 36º. </strong>PERÍODOS DE PAGO. En el AGRICOPECUARIA LA COSECHA los períodos de pago podrán se mensualmente, quincenal o semanal siempre que este no afecte las condiciones económicas del trabajador, para realizar los pago, la empresa cuenta con hasta el 5 día calendario después de cumplida la fecha de pago, tal y como se estipula en el contrato de vinculación. El pago se hará en efectivo o mediante abono en cuenta corriente o de ahorros de cada trabajador, si éste la posee, previo acuerdo entre éste y la organización. La Empresa, puede utilizar medios electrónicos para la notificación del pago de la nómina a sus trabajadores, y se entiende que el acuse de recibo de ésta constituye un comprobante de que se efectuó el pago.</p>
+<p class="paragrafo"><strong>PARÁGRAFO: </strong>El pago del trabajo suplementario o de horas extras y el recargo por trabajo nocturno debe efectuarse junto con el salario ordinario del período en que se han causado o a más tardar con el salario del período siguiente. Todos estos pagos se deben hacer en las oficinas de la Empresa o a través del pago por medio electrónico.</p>
+<p class="article"><strong>ARTÍCULO 37°</strong>. El salario se pagará al trabajador directamente o a la persona que él autorice por escrito.</p>
+<h2 id="cap-12" class="chapter"><span class="chapter-label">CAPÍTULO XII</span><span class="chapter-title">SERVICIOS MÉDICOS, MEDIDAS DE SEGURIDAD, RIESGOS PROFESIONALES, PRIMEROS AUXILIOS EN CASO DE ACCIDENTES DE TRABAJO, NORMAS SOBRE LABORES EN ORDEN A LA MAYOR HIGIENE, REGULARIDAD Y SEGURIDAD EN EL TRABAJO</span></h2>
+<p class="article"><strong>ARTÍCULO 38°. </strong>Es obligación del empleador velar por la salud, seguridad e higiene de los trabajadores a su cargo. Igualmente, es su obligación garantizar los recursos necesarios para implementar y ejecutar actividades permanentes en medicina preventiva y del trabajo, y en higiene y seguridad industrial, de conformidad al Sistema de Gestión en Seguridad y Salud en el trabajo, y con el objeto de velar por la protección integral del trabajador.</p>
+<h3 class="subtitle"><strong>SERVICIOS MÉDICOS.</strong></h3>
+<p class="article"><strong>ARTÍCULO 39°. </strong>Los servicios médicos que requieran los trabajadores se prestarán por las Empresas Prestadoras de Salud (EPS) o Administradoras de Riesgos Laborales (ARL), a través de la Institución Prestadora de Servicios de Salud (IPS), a la cual se encuentren asignados. En caso de no afiliación estarán a cargo del empleador, sin perjuicio de las acciones legales pertinentes.</p>
+<h3 class="subtitle"><strong>AVISO A LA EMPRESA SOBRE LA ENFERMEDAD.</strong></h3>
+<p class="article"><strong>ARTÍCULO 40°</strong>. Todo trabajador, desde el mismo día en que se sienta enfermo, deberá comunicarlo al empleador, a su representante, o a quien haga sus veces, el cual hará lo necesario para que sea examinado por el médico correspondiente, a fin de que certifique si puede continuar o no en el trabajo, y en su caso determine la incapacidad y el tratamiento a que el trabajador debe someterse. Si el trabajador, no diere aviso dentro del término indicado, o no se sometiera al examen médico que se haya ordenado, su inasistencia al trabajo se tendrá como injustificada para los efectos a que haya lugar, a menos que demuestre que estuvo en absoluta</p>
+<p>imposibilidad para dar el aviso y someterse al examen en la oportunidad debida.</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1</strong>. En el evento de incapacidad del trabajador, éste informará dentro de las 24 horas siguientes la novedad, y la empresa, sólo estará obligada a pagar los dos primeros días en caso de incapacidad de origen común, para los demás días y eventos, serán las entidades de seguridad social quienes deben cancelar las incapacidades y licencias de maternidad y paternidad.</p>
+<p class="paragrafo"><strong>PARÁGRAFO 2</strong>. Parámetros de las incapacidades. En relación con las incapacidades médicas se establecen los siguientes parámetros: </p>
+<ol class="doc-list">
+<li>La simple manifestación del empleado de que su ausencia al trabajo se debió al hecho de haber concurrido al servicio médico o al médico particular no será aceptada por la Empresa como excusa.</li>
+<li>El trabajador deberá informar a la persona encargada de recurso humanos o a su jefe inmediato, sobre la expedición de una prescripción de incapacidad y su duración, dentro del día hábil siguiente y entregar en los términos señalados por la Institución, en original o debidamente transcrita, esta prescripción de incapacidad emitida por el médico, acompañada de los documentos exigidos por la EPS o la ARL o las entidades que hicieren sus veces de acuerdo con la normatividad vigente, a la cual se encuentra afiliado para efectos del trámite de reconocimiento de la prestación económica.</li>
+</ol>
+<p>La Empresa realizará el trámite correspondiente para el reconocimiento de la prestación económica de incapacidad ante la entidad respectiva a la cual se encuentre afiliado el empleado de acuerdo con la naturaleza del accidente o enfermedad.</p>
+<ol class="doc-list">
+<li>Como justificación del empleado para faltar al trabajo por razones de salud, la Empresa sólo tendrá en cuenta el certificado de incapacidad que otorgue la EPS o la ARL o las entidades que hicieren sus veces de acuerdo con la normatividad vigente, a la cual se encuentre afiliado el empleado. Este certificado será obtenido bajo los parámetros y procedimientos establecidos por las normas jurídicas vigentes sobre la materia.</li>
+</ol>
+<p class="paragrafo"><strong>PARÁGRAFO 3:</strong> Con el fin de garantizar la salud del trabajador, por ningún motivo habrá lugar a convenio entre las partes para laborar en los días de incapacidad.</p>
+<h3 class="subtitle"><strong>INSTRUCCIONES Y TRATAMIENTOS MÉDICOS.</strong></h3>
+<p class="article"><strong>ARTÍCULO 41°. </strong>Los trabajadores deben someterse a las instrucciones y tratamiento que ordena el médico que los haya examinado, así como a los exámenes y tratamientos preventivos que para todos o algunos de ellos ordena la empresa en determinados casos. El trabajador que sin justa causa se negare a someterse a los exámenes, instrucciones o tratamientos antes indicados, perderá el derecho a la prestación económica por la incapacidad que sobrevenga a consecuencia de esa negativa. (artículo 55 Decreto 1295 de 1994).</p>
+<h3 class="subtitle"><strong>PRIMEROS AUXILIOS EN CASO DE ACCIDENTE DE TRABAJO.</strong></h3>
+<p class="article"><strong>ARTÍCULO 42°</strong>. En caso de accidente de trabajo, el jefe de la respectiva dependencia, o su representante, ordenará inmediatamente la prestación de los primeros auxilios, la remisión al médico y tomará todas las medidas que se consideren necesarias y suficientes para reducir al mínimo, las consecuencias del accidente, informando el mismo en los términos establecidos en el Decreto 1295 de 1994 ante la EPS y la ARL.</p>
+<p class="article"><strong>ARTÍCULO 43º. </strong>En caso de accidente no mortal, aun el más leve o de apariencia insignificante, el trabajador lo comunicará inmediatamente al empleador, a su representante o a quien haga sus veces, para que se provea la asistencia médica y tratamiento oportuno según las disposiciones legales vigentes, indicará, las consecuencias del accidente y la fecha en que cese la incapacidad.</p>
+<p class="article"><strong>ARTÍCULO 44°. </strong>Todas las empresas y las entidades administradoras de riesgos laborales deberán llevar estadísticas de los accidentes de trabajo y de las enfermedades laborales, para lo cual deberán, en cada caso, determinar la gravedad y la frecuencia de los accidentes de trabajo o de las enfermedades laborales, de conformidad con el reglamento que se expida. Todo accidente de trabajo o enfermedad laboral que ocurra en una empresa o actividad económica, deberá ser informado por el empleador a la entidad administradora de riesgos laborales y a la entidad promotora de salud, en forma simultánea, dentro de los dos días hábiles siguientes de ocurrido el accidente o diagnosticada la enfermedad.</p>
+<p class="paragrafo"><strong>PARÁGRAFO: </strong>De todo accidente se llevará registro en libro especial, con indicación de la fecha, hora, sector y circunstancias en que ocurrió, nombre de los testigos presenciales si los hubiere, y un relato sucinto de lo que puedan declarar.</p>
+<p class="article"><strong>ARTÍCULO 45°. </strong>En todo caso, en lo referente a los puntos de que trata este capítulo, tanto la empresa como los trabajadores, se someterán a las normas de riesgos laborales del Código Sustantivo del Trabajo y las demás que con tal fin se establezcan. De la misma manera, ambas partes están obligadas a sujetarse al Decreto Ley 1295 de 1994, y la Ley 776 del 17 de diciembre de 2002, y Ley 1562 de 2012 del Sistema General de Riesgos Laborales, de conformidad a los términos estipulados en los preceptos legales pertinentes y demás normas concordantes y reglamentarias antes mencionadas.</p>
+<p class="article"><strong>ARTÍCULO 46°. </strong>La Empresa no será responsable por ningún accidente que haya sido provocado deliberadamente o por culpa del trabajador, en este caso, sólo estará obligada a prestar los primeros auxilios.</p>
+<p>Tampoco responderá de la agravación que se presente en las lesiones o perturbaciones causadas por cualquier accidente, por razón de no haber dado el trabajador, el aviso oportuno correspondiente o haberlo demorado sin justa causa.</p>
+<p class="article"><strong>ARTÍCULO 47º. </strong>En general, todo el personal de la empresa tiene la obligación de prestar el máximo de cooperación para el buen desempeño de las funciones que cumple el encargado de prevención de riesgos.</p>
+<p class="article"><strong>ARTÍCULO 48º. </strong>Todo trabajador deberá comunicar a su jefe directo o al encargado de seguridad, cualquier desperfecto o condición insegura en los equipos o instalaciones, que puedan entrañar algún riesgo en la seguridad del personal y de las instalaciones.</p>
+<p class="article"><strong>ARTÍCULO 49º. </strong>En caso de producirse un incendio, el trabajador que lo detecte deberá dar la alarma, avisando en voz alta a cualquier persona que se encuentre cerca, para que ésta avise a Bomberos. Combatirá el fuego con los elementos  que disponga y se  pondrá a las  órdenes  del encargado de seguridad o jefe de brigada contra incendios.</p>
+<p><strong>USO Y CORRECTA PRESERVACIÓN DEL ACATAMIENTO DE LAS NORMAS Y MÉTODOS DE TRABAJO INTERNO, DE LAS MEDIDAS DE HIGIENE Y SEGURIDAD Y DE LAS RESPONSABILIDADES DE LOS MANDOS MEDIOS.</strong></p>
+<p class="article"><strong>ARTÍCULO 50º. </strong>Es obligación de todo trabajador acatar los procedimientos y métodos de trabajo y no improvisar o cambiar sistemas recomendados como seguros. Si existieran dudas sobre algún método, deberá consultarse con el jefe directo.</p>
+<p class="article"><strong>ARTÍCULO 51º. </strong>Todas las medidas de higiene y seguridad emanadas de este reglamento, deben ser cumplidas en forma obligatoria por el personal, entre ellas las siguientes:</p>
+<p><strong>a) </strong>Todo trabajador debe presentarse a su lugar de trabajo  en forma aseada y con su ropa de trabajo limpia y ordenada.</p>
+<p><strong>b) </strong>Deberá   cooperar   porque   su   lugar   de   trabajo   se   mantenga permanentemente aseado y ordenado.</p>
+<p><strong>c) </strong>Todo  trabajador  deberá  usar  en  forma  conveniente  los  Servicios</p>
+<p>Higiénicos y colaborar con su aseo, que será en su propio beneficio.</p>
+<p><strong>d) </strong>Como medida de seguridad y velando por la integridad física de los trabajadores, éstos no deberán correr o jugar en las zonas de cocina, áreas de servicio y salas de baños; cuando estas se encuentren en actividad de aseo, ya que los resbalones y caídas en estos casos son frecuentes por su piso generalmente.</p>
+<p><strong>e) </strong>Como medida de seguridad e higiene todo trabajador en servicio de cocina, debe usar los implementos de bioseguridad como uso de cofia, guantes y mascarilla respiratoria (tapabocas) para evitar contaminación de alimentos.</p>
+<p><strong>f)	</strong>Como medida de seguridad todo trabajador en servicio de cocina que deba operar equipos con partes movibles, debe usar en su trabajo el pelo corto y/o bien recogido, para evitar atrapamientos.</p>
+<p><strong>g) </strong>Por las características propias de los trabajos en el restaurante, deberá evitarse el uso de gargantillas, anillos, pulseras, aretes y cualquier otro objeto que pueda ser atrapado por equipos de cocina y que sea un foco de acumulación de contaminación para los alimentos.</p>
+<p class="article"><strong>ARTÍCULO 52°. </strong>Los trabajadores deberán someterse a todas las medidas de higiene y seguridad que prescriban las autoridades del ramo en general, y en particular a las que ordene la empresa para prevención de las enfermedades y de los riesgos en el manejo de las máquinas y demás elementos de trabajo especialmente para evitar los accidentes de trabajo y enfermedades laborales.</p>
+<p class="paragrafo"><strong>PARÁGRAFO: </strong>El incumplimiento por parte del trabajador de las instrucciones, reglamentos y determinaciones de prevención de riesgos, adoptados en forma general o específica y que se encuentren dentro del Programa de Seguridad y Salud en el Trabajo de la respectiva empresa, que le hayan comunicado por escrito, facultan al empleador para la terminación del vínculo o relación laboral por justa causa, tanto para los trabajadores privados como los servidores públicos, previa autorización del Ministerio de Trabajo, respetando el derecho de defensa. (artículo 91 - Decreto 1295 de 1994).</p>
+<p class="article"><strong>ARTÍCULO 53º. </strong>Los supervisores y jefes a todo nivel, velarán porque todas las normas de este Reglamento y los métodos de trabajo sean obedecidas por el personal; que los elementos de protección personal sean usados en forma correcta; que el orden y aseo de los lugares de trabajo sea permanente; que todo el personal cuente con el certificado de manipulación de alimentos; y, en general, que las condiciones de trabajo sean las mejores posibles.</p>
+<p>Serán, así mismo, responsables de la seguridad de su personal, de su instrucción en prevención y de la supervisión de las instalaciones, equipos, maquinarias y otros recursos de sus áreas de mando.</p>
+<p class="article"><strong>ARTÍCULO 54º</strong>. Del orden y aseo de los lugares de trabajo:</p>
+<p><strong>a) </strong>Los pisos deberán mantenerse limpios, libres de obstrucciones y de sustancias deslizantes.</p>
+<p><strong>b) </strong>Las bodegas deberán estar permanentemente limpias y ordenadas.</p>
+<p><strong>c) </strong>Las basuras y desperdicios se deberán depositar en recipientes con tapas, distribuidos en distintos lugares de los recintos de trabajo.</p>
+<p><strong>d) </strong>Todo   trabajador   deberá   respetar  las   áreas  de   tránsito   y   de almacenamiento y zonas demarcadas en los lugares de trabajo.</p>
+<p><strong>e) </strong>Será  responsabilidad  de  los  supervisores  y  jefes velar por  el cumplimiento de estas instrucciones.</p>
+<p><strong>f)	</strong>Todo el personal debe preocuparse de que los elementos de combate de incendios se mantengan en lugares accesibles, libres de obstáculos y en buen estado.</p>
+<p><strong>g) </strong>Las herramientas y/o elementos de cargo personal, así como todas las que se utilicen, deben mantenerse en buenas condiciones. Las herramientas quebradas o defectuosas deben ser devueltas para su reparación o cambio.</p>
+<h2 id="cap-13" class="chapter"><span class="chapter-label">CAPÍTULO XIII</span><span class="chapter-title">ORDEN JERÁRQUICO</span></h2>
+<p class="article"><strong>ARTÍCULO 55°. </strong>El orden Jerárquico de acuerdo con los cargos existentes en la empresa es el siguiente: </p>
+<p class="paragrafo"><strong>PARÁGRAFO 1. </strong>De manera transversal a los cargos mencionados jerárquicamente se encuentra el jefe del área de Talento Humano.</p>
+<p class="paragrafo"><strong>PARÁGRAFO 2. </strong> De los cargos mencionados, tienen facultades para imponer sanciones disciplinarias a los trabajadores de la empresa como lo es la persona encargada de RECURSOS HUMANOS, o quien ésta delegue, en primera instancia y GERENCIA GENERAL en segunda instancia o quien ésta delegue.</p>
+<h2 id="cap-14" class="chapter"><span class="chapter-label">CAPÍTULO XIV</span><span class="chapter-title">PRESCRIPCIONES DE ORDEN</span></h2>
+<p class="article"><strong>ARTÍCULO 56°. </strong>OBLIGACIONES GENERALES DE LA EMPRESA:<strong> </strong>La Empresa tiene como obligaciones generales las siguientes:</p>
+<p>Ejecutar el contrato de trabajo de buena fe.</p>
+<p>Respetar y brindar un buen trato a los empleados.</p>
+<p>Brindar a los empleados condiciones laborales según lo contemplado en la normatividad vigente acordes con la dignidad humana, la equidad y la justicia.</p>
+<p>Adoptar medidas tendientes a proteger la salud y la seguridad de los empleados a su cargo.</p>
+<p>Cumplir con las obligaciones en seguridad y previsión de riesgos laborales definidas por la normatividad vigente.</p>
+<p>Proveer un ambiente de trabajo sano.</p>
+<p>Implementar y ejecutar actividades permanentes en medicina preventiva y del trabajo y en higiene ambiental y seguridad laboral.</p>
+<p>Pagar la remuneración pactada en las condiciones y períodos convenidos.</p>
+<p>Afiliar a sus empleados al sistema de seguridad social integral y a una Caja de Compensación Familiar.</p>
+<p>En general todas aquellas previstas en la Ley para los empleadores. </p>
+<p class="article"><strong>ARTÍCULO 57º. </strong>Los trabajadores tienen como deberes los siguientes:</p>
+<p><strong>a) </strong>Respeto y subordinación a los superiores.</p>
+<p><strong>b) </strong>Respeto a sus compañeros de trabajo.</p>
+<p><strong>c) </strong>Procurar completa  armonía  con  sus  superiores  y  compañeros  de trabajo en las relaciones personales y en la ejecución de labores.</p>
+<p><strong>d) </strong>Guardar buena conducta en todo sentido y obrar con espíritu de leal colaboración en el orden moral y disciplina general de la empresa.</p>
+<p><strong>e) </strong>Ejecutar los trabajos que le confíen con honradez, buena voluntad y de la mejor manera posible.</p>
+<p><strong>f)	</strong>Hacer las observaciones, reclamos y solicitudes a que haya lugar por conducto del respectivo superior y de manera fundada, comedida y respetuosa.</p>
+<p><strong>g) </strong>Ser verídico en todo caso.</p>
+<p><strong>h) </strong>Recibir y aceptar las órdenes, instrucciones y correcciones dadas por la Empresa contratista, relacionadas con el trabajo, el orden y la conducta en general, con su verdadera intención, que es en todo caso la de encaminar y perfeccionar los esfuerzos en provecho propio y de la Empresa en general.</p>
+<p><strong>i)	</strong>Observar rigurosamente las medidas y precauciones que le indique su respectivo Jefe para el manejo de las máquinas o instrumentos de trabajo.</p>
+<p><strong>j)	</strong>Permanecer durante la jornada de trabajo en el sitio o lugar en donde debe desempeñar sus labores, siendo prohibido, salvo orden superior, pasar al puesto de trabajo de otros compañeros o ausentarse de él.</p>
+<h2 id="cap-15" class="chapter"><span class="chapter-label">CAPÍTULO XV</span><span class="chapter-title">LABORES PROHIBIDAS PARA MUJERES Y MENORES DE 18 AÑOS.</span></h2>
+<p class="article"><strong>ARTÍCULO 58°. </strong>Queda prohibido emplear a los menores de dieciocho (18) años y a las mujeres en trabajo de pintura industrial, que entrañen el empleo de la cerusa, del sulfato de plomo o de cualquier otro producto que contenga dichos pigmentos. Los menores de dieciocho (18) años no pueden ser empleadas en trabajos subterráneos de las minas ni en general trabajar en labores peligrosas, insalubres o que requieran grandes esfuerzos (ordinales 2 y 3 del artículo 242 del C.S.T). </p>
+<p class="article"><strong>ARTÍCULO 59°. </strong>Ninguna persona menor de 18 años podrá ser empleada o realizar trabajos que impliquen peligro o que sean nocivos para su salud e integridad física o psicológica o los considerados como peores formas de trabajo infantil. El Ministerio de la Protección Social en colaboración con el Instituto Colombiano de Bienestar Familiar, establecerán la clasificación de dichas actividades de acuerdo al nivel de peligro y nocividad que impliquen para los adolescentes autorizados para trabajar y la publicarán cada dos años periódicamente en distintos medios de comunicación. Para la confección o modificación de estas listas, el Ministerio consultará y tendrá en cuenta a las organizaciones de trabajadores y de empleadores, así como a las instituciones y asociaciones civiles interesadas, teniendo en cuenta las recomendaciones de los instrumentos e instancias internacionales especializadas.<strong> </strong>(artículo 117 Ley 1098 de 2006). </p>
+<h2 id="cap-16" class="chapter"><span class="chapter-label">CAPÍTULO XVI</span><span class="chapter-title">OBLIGACIONES ESPECIALES PARA LA EMPRESA Y LOS TRABAJADORES</span></h2>
+<p class="article"><strong>ARTÍCULO 60º. </strong>Son obligaciones especiales del empleador:</p>
+<p>Poner a disposición de los trabajadores, salvo estipulación en contrario, los instrumentos adecuados y las materias primas necesarias para la realización de las labores.</p>
+<p>Procurar a los trabajadores, locales apropiados y elementos adecuados de protección contra accidentes y enfermedades profesionales en forma que se garanticen razonablemente la seguridad y la salud. </p>
+<p><strong>c)</strong><strong> </strong>Prestar de inmediato los primeros auxilios en caso de accidentes o enfermedad. Para este efecto, el establecimiento mantendrá lo necesario según reglamentación de las autoridades sanitarias.</p>
+<p><strong>d)</strong><strong> </strong>Pagar la remuneración pactada en las condiciones, períodos y lugares convenidos.</p>
+<p><strong>e)</strong> Guardar absoluto respeto a la dignidad personal del trabajador, sus creencias y sentimientos.</p>
+<p><strong>f)</strong>	Conceder al trabajador las licencias necesarias para los fines y en los términos indicados en el artículo 30° y 31° de este reglamento.</p>
+<p><strong>g)</strong> Dar al trabajador que lo solicite, a la expiración del contrato, una certificación en que conste el tiempo de servicio, índole de la labor y salario devengado, e igualmente si el trabajador lo solicita, hacerle practicar examen sanitario y darle certificación sobre el particular, si al ingreso o durante la permanencia en el trabajo hubiere sido sometido a examen médico. Se considera que el trabajador por su culpa elude, dificulta o dilata el examen, cuando transcurridos cinco (5) días a partir de su retiro no se presenta donde el médico respectivo para las prácticas del examen, a pesar de haber recibido la orden correspondiente.</p>
+<p><strong>h)</strong> Pagar al trabajador los gastos razonables de venida y regreso, si para prestar su servicio lo hizo cambiar de residencia, salvo si la terminación del contrato se origina por culpa o voluntad del trabajador.</p>
+<ol class="doc-list">
+<li><strong>1.  </strong>Si el trabajador prefiere radicarse en otro lugar, el empleador le debe costear su traslado hasta concurrencia de los gastos que demandaría su regreso al lugar donde residía anteriormente.</li>
+<li><strong>2. </strong>En los gastos de traslado del trabajador, se entienden comprendidos los de familiares que con él convivieren.</li>
+</ol>
+<p><strong>i)	</strong>Conceder  al  trabajador  en  caso  de  fallecimiento  de  cónyuge, compañero o compañera permanente o de un familiar hasta el segundo grado de consanguinidad, primero de afinidad y primero civil, una licencia remunerada por luto de 05 días hábiles, cualquiera sea sus modalidades de contratación o vinculación laboral. También gozarán de la licencia remunerada por luto el hijo, padre o madre de crianza. Este hecho deberá demostrarse mediante documento expedido por la autoridad competente, dentro de los treinta (30) días siguientes a su ocurrencia.</p>
+<p><strong>j)	</strong>Conceder en forma oportuna a la trabajadora en estado de embarazo, la licencia remunerada consagrada en el numeral 1 del artículo 236 de forma tal que empiece a disfrutarla manera obligatoria una (1) semana antes  o  (2) semanas  antes  de la  fecha  probable del  parto  según decisión de la futura madre conforme al certificado médico a que se refiere numeral 3 del citado artículo 236.</p>
+<p><strong>k) </strong>Conceder a las trabajadoras que estén en período de lactancia los descansos ordenados por el artículo 238 del Código Sustantivo del Trabajo.</p>
+<p><strong>l)	</strong>Conservar el puesto a las empleadas que estén disfrutando de los descansos remunerados, a que se refiere el numeral anterior, o por licencia de enfermedad motivada en el embarazo o parto. No producirá efecto alguno el despido que el empleador comunique a la trabajadora en tales períodos o que, si acude a un preaviso, éste expire durante los descansos o licencias mencionadas.</p>
+<p><strong>m) </strong><strong> </strong>Llevar un registro de inscripción de todas las personas menores de edad que emplee, con indicación de la fecha de nacimiento de las mismas.</p>
+<p><strong>n) </strong>Cumplir este reglamento y mantener el orden, la moralidad y el respeto a las leyes.</p>
+<p><strong>o) </strong>Además de las obligaciones especiales a cargo del empleador, éste garantizará el acceso del trabajador menor de edad a la capacitación laboral  y concederá licencia  no remunerada  cuando la actividad escolar así lo requiera. Será también obligación de su parte, afiliarlos a los regímenes de Seguridad Social a todos los trabajadores menores de edad que laboren a su servicio, lo mismo que suministrarles cada cuatro (4) meses en forma gratuita, un par de zapatos y un vestido de labor, teniendo en cuenta que la remuneración mensual sea hasta dos veces el salario mínimo vigente en la empresa (artículo 57 C.S.T).</p>
+<p><strong>p) </strong>Suministrar cada cuatro (4) meses en forma gratuita, un par de zapatos y un vestido de labor, teniendo en cuenta que la remuneración mensual sea hasta dos veces el salario mínimo vigente en la empresa (artículo 57 C.S.T).</p>
+<p><strong>q) </strong>Abrir  y llevar  al  día los  registros  de  horas  extras  y  de  trabajadores menores que ordena la ley.</p>
+<p><strong>r) </strong>Propiciar un buen ambiente laboral, fomentar los mecanismos para prevenir situaciones de acoso laboral, así como apoyar las actividades y acuerdos emitidos por el comité de convivencia laboral.</p>
+<p class="article"><strong>ARTÍCULO 61º. </strong>Son obligaciones especiales del trabajador:</p>
+<p><strong>A. Sobre el respeto, la lealtad y la buena conducta:</strong></p>
+<ol class="doc-list">
+<li><strong>1.  </strong>Guardar el debido respeto y subordinación a sus superiores.</li>
+<li><strong>2.  </strong>Guardar el debido respeto a sus compañeros de trabajo.</li>
+<li><strong>3.  </strong>Guardar buena conducta en todo sentido y obrar con espíritu de leal  colaboración en el orden, moral y disciplina general de la empresa</li>
+<li><strong>4. </strong>Guardar rigurosamente la moral, la lealtad y la fidelidad en las  relaciones con sus superiores y compañeros.</li>
+<li><strong>5.  </strong>Procurar  completa  armonía  con  sus  superiores  y  compañeros  de trabajo en las relaciones personales y en la ejecución de labores.</li>
+<li><strong>6.  </strong>En el trabajo, utilizar un lenguaje y actitudes apropiadas para mantener un buen ambiente laboral. </li>
+<li><strong>7. </strong>Evitar los comentarios de pasillo y en especial aquellos que hagan referencia en términos negativos o descalificadores a otras personas o a la Empresa o clientes.</li>
+<li><strong>8.  </strong>Promover un buen ambiente de trabajo, mediante el respeto, el buen trato y la comunicación sincera, respetuosa y a quien corresponde.</li>
+<li><strong>9. </strong>Mantener buenas relaciones y respetar a los clientes proveedores o contratistas de la Empresa y a sus trabajadores.</li>
+<li><strong>10. </strong>Atender en forma oportuna, respetuosa, cortés y eficiente a los clientes  y/o usuarios de la Empresa.</li>
+<li><strong>11. </strong>Comunicar oportunamente a la empresa las observaciones que estime conducentes a evitar daños y perjuicios.</li>
+<li><strong>12. </strong>Prestar la colaboración posible en caso de siniestro o riesgo inminente que afecten o amenacen las personas o las cosas de la empresa.</li>
+<li><strong>13. </strong>Informar ante las autoridades de la Empresa, de acuerdo con el orden jerárquico establecido, la comisión de hechos irregulares, fraudulentos o contrarios a los principios y políticas de ésta o a las normas legales, por parte de o con la participación de trabajadores de la Empresa o de terceros.</li>
+<li><strong>14. </strong>Ejecutar los trabajos que le confíen con honradez, buena voluntad y de la mejor manera posible.</li>
+<li><strong>15. </strong>Hacer las observaciones, reclamos y solicitudes a que haya lugar por conducto del respectivo superior y de manera fundada, comedida y respetuosa.</li>
+<li><strong>16. </strong>Obrar siempre, en el desarrollo de su labor, de acuerdo con las políticas, normas, instrucciones, procesos y procedimientos de la Empresa, y con las disposiciones legales.</li>
+<li><strong>17. </strong>Utilizar  de  manera  racional  los  beneficios  y  servicios  que  le  sean otorgados por la Empresa.</li>
+</ol>
+<p><strong>B. Sobre el seguimiento de las normas y Procedimientos de la Empresa, de las instrucciones recibidas y el cumplimiento de las Funciones asignadas:</strong></p>
+<ol class="doc-list">
+<li><strong>18. </strong>Observar los preceptos del presente Reglamento. </li>
+<li><strong>19. </strong>Acatar y cumplir las órdenes e instrucciones que de manera particular le imparta la empresa o sus Representantes según el orden jerárquico establecido.</li>
+<li><strong>20. </strong>Recibir y aceptar las órdenes, instrucciones y correcciones relacionadas con el trabajo, con su verdadera intención que es en todo caso la de encaminar y perfeccionar los esfuerzos en provecho propio y de la empresa en general.</li>
+<li><strong>21. </strong>Desempeñar el cargo de acuerdo con las funciones señaladas en la descripción del oficio, así como las que sean conexas o complementarias de la labor principal, todo de acuerdo con los parámetros de calidad y eficiencia establecidos en la Empresa.</li>
+<li><strong>22. </strong>Cumplir las funciones dentro de las facultades delegadas o inherentes al cargo desempeñado.</li>
+<li><strong>23. </strong>Preguntar, consultar o asesorarse cuando tenga dudas sobre la forma de realizar el trabajo asignado.</li>
+<li><strong>24. </strong>Mantenerse permanentemente actualizado sobre toda la información, normas legales, reglamentación y demás, que guarden relación con su cargo, ya sea suministrada por la Empresa o a través de diferentes medios informativos.</li>
+<li><strong>25. </strong>Atender a las indicaciones que la Empresa haga por medio de carteles, o	circulares,    anuncios    e    instrucciones,    procedimientos,    etc., relacionados con su cargo y el servicio del mismo y de la empresa en general.</li>
+<li><strong>26. </strong>Responder ante la Empresa por cualquier perjuicio que ésta pueda recibir como consecuencia de su conducta negligente o imprudente o por el incumplimiento de sus deberes y obligaciones laborales.</li>
+<li><strong>27. </strong>Cumplir  estrictamente  con  las  obligaciones  de  orden  económico adquiridas con la Empresa.</li>
+<li><strong>28. </strong>Someterse a los controles o requisas que se requieran para obtener la mayor seguridad en el desarrollo de las labores propias de la Empresa, siempre que aquellas no lesionen o pongan en peligro la dignidad del trabajador.</li>
+</ol>
+<p><strong>C. Sobre la Permanencia en el Puesto de Trabajo y el cumplimiento de la</strong></p>
+<p><strong>Jornada de Trabajo:</strong></p>
+<ol class="doc-list">
+<li><strong>29. </strong>Realizar personalmente la labor para la cual fue contratado en los términos estipulados.</li>
+<li><strong>30. </strong>Permanecer durante la jornada de trabajo en el sitio o lugar en donde debe desempeñar sus labores, realizando sus tareas con dedicación, siendo prohibido, salvo orden superior, pasar al puesto de trabajo de otros compañeros a fin de evitar perturbar las labores de los mismos.</li>
+<li><strong>31. </strong>Asistir puntualmente al sitio de trabajo, según el horario establecido, así como a las actividades laborales convocadas por la Empresa.</li>
+<li><strong>32. </strong>Observar estrictamente las disposiciones de la Empresa para la solicitud de permisos y comprobación de incapacidades por enfermedad, calamidad doméstica y similar conforme al presente Reglamento.</li>
+<li><strong>33. </strong>Laborar tiempo suplementario cuando así lo requiera la Empresa.</li>
+<li><strong>34. </strong>Cumplir a cabalidad con los tiempos establecidos de descanso durante la jornada laboral.</li>
+</ol>
+<p><strong>D. Sobre el Manejo de la Información de la Empresa y la actualización de</strong></p>
+<p><strong>Datos Personales:</strong></p>
+<ol class="doc-list">
+<li><strong>35. </strong>Brindar información verídica en todos los casos.</li>
+<li><strong>36. </strong>Guardar   absoluta   reserva   en   relación   con   los   manuales   de procedimientos, programas de sistematización, información atinente a asuntos internos o administrativos de la Empresa, de cualquier índole, o información relacionada con los clientes o usuarios de la Empresa.</li>
+<li><strong>37. </strong>No comunicar a terceros, salvo autorización expresa, las informaciones que sean de naturaleza reservada y cuya divulgación pueda ocasionar perjuicios a la empresa, lo que no obsta para denunciar delitos comunes o violaciones del contrato o de las normas legales de trabajo ante las autoridades competentes.</li>
+<li><strong>38. </strong>Registrar en las oficinas de la empresa su domicilio y dirección y dar aviso oportuno de cualquier cambio que ocurra (artículo 58 C.S.T). </li>
+<li><strong>39. </strong>Registrar a la administración los cambios de su estado civil, nombre del cónyuge o compañera permanente, hijos, edades, dirección, etc. y toda aquella información personal que la Empresa requiera mantener actualizada, cada vez que ocurra algún cambio, es necesario mencionar que esta información será confidencial y sólo será utilizada para trámites ante el sistema de seguridad social integral, respetando en todo caso la normativa del habeas data.</li>
+<li><strong>40. </strong>Utilizar únicamente el software adquirido legalmente por la Empresa.</li>
+<li><strong>41. </strong>No dar o autorizar la clave personal entregada por la Empresa, a otros compañeros de trabajo o terceros, durante la duración del contrato de trabajo y aún luego de la terminación del mismo.</li>
+</ol>
+<p><strong>E. Sobre el Manejo de Materiales, Equipos y Maquinaria:</strong></p>
+<ol class="doc-list">
+<li><strong>42. </strong>Utilizar  en  forma racional y  sensata  los  elementos,  herramientas  o equipos de trabajo y demás  recursos que la Empresa ponga a su disposición para el cumplimiento de las labores.</li>
+<li><strong>43. </strong>Conservar  y  restituir en buen  estado  salvo  el  deterioro  natural,  los instrumentos y útiles que le haya proporcionado la Empresa para la ejecución de sus labores.</li>
+<li><strong>44. </strong>Devolver a la empresa los materiales e insumos sobrantes.</li>
+<li><strong>45. </strong>Evitar e impedir la pérdida, daño o desperdicio de materia prima, equipos, muebles, energía u otros elementos de la Empresa.</li>
+<li><strong>46. </strong>Observar rigurosamente las instrucciones y precauciones de uso y/o las medidas que le indique su respectivo Jefe para el manejo de las máquinas o instrumentos de trabajo.</li>
+<li><strong>47. </strong>Evitar que terceras personas utilicen sus materiales de trabajo, enseres, mobiliario, equipos y elementos de oficina, y en general los muebles e inmuebles de propiedad o que estén al servicio de la Empresa; o que se lucren de servicios o beneficios que ésta haya dispuesto para sus trabajadores.</li>
+<li><strong>48. </strong>Mantener en adecuado estado de orden y limpieza su puesto de trabajo, así como los equipos y recursos entregados para tal fin. </li>
+</ol>
+<p><strong>F.  Sobre  la  Presentación  Personal,  Uso  de  la  Dotación  y  Carnet  de</strong></p>
+<p><strong>Identificación de la Empresa:</strong></p>
+<ol class="doc-list">
+<li><strong>49. </strong>Asistir al trabajo en adecuadas condiciones de presentación personal.</li>
+<li><strong>50. </strong>Utilizar la dotación suministrada en aquellos casos en que la empresa lo requiera. </li>
+<li><strong>51. </strong>Portar en un sitio visible, el carné establecido por la Empresa para la identificación personal  de sus trabajadores, en el lugar y horas de trabajo.</li>
+</ol>
+<p><strong>G. Sobre Seguridad y Salud en el Trabajo y Seguridad Industrial:</strong></p>
+<ol class="doc-list">
+<li><strong>52. </strong>Observar las medidas preventivas higiénicas prescritas por el médico, la persona encargada de la empresa o por las autoridades del ramo y observar con suma diligencia y cuidado las instrucciones y órdenes preventivas de accidentes o de enfermedades profesionales.</li>
+<li><strong>53. </strong>Cumplir con las normas de Seguridad Industrial y Seguridad y Salud en el Trabajo, en especial las que tienen que ver con el uso de los Elementos de Protección Personal.</li>
+<li><strong>54. </strong>Participar  en  los  programas  preventivos  y  de  capacitación  que programe el área de Seguridad y Salud en el Trabajo o el área de formación.</li>
+<li><strong>55. </strong>Abstenerse  de  realizar  labores  que  afecten  su  salud  u  ocasionen desgaste a su organismo en forma tal que le impidan prestar adecuadamente el servicio contratado.</li>
+<li><strong>56. </strong>Informar en un lapso de 24 horas una vez ocurrido, todo accidente o incidente de trabajo por leve que sea, al Jefe Inmediato, Supervisor o Coordinación de Seguridad y Salud en el Trabajo.</li>
+<li><strong>57. </strong>Cumplir las citas, tratamientos, terapias y períodos de inactividad por incapacidad que ordene la institución respectiva del Sistema de Seguridad Social a la cual se encuentre afiliado.</li>
+<li><strong>58. </strong>Cumplir    las    instrucciones,    reglamentos    y    determinaciones    de prevención de riesgos adoptados en forma general o específica o que </li>
+</ol>
+<p>se encuentren dentro de los programas de Gestión en Seguridad y</p>
+<p>Salud en el Trabajo SG-SST.</p>
+<ol class="doc-list">
+<li><strong>59. </strong>Cumplir a cabalidad la Política de Prevención de Consumo de Alcohol, Tabaco y Sustancias Psicoactivas con que cuenta la empresa, y demás instrucciones impartidas con relación a este tema.</li>
+</ol>
+<p><strong>H. Sobre Las Citaciones, asistencia a reuniones convocadas, por la empresa, así como las responsabilidades y Recomendaciones del COPASST y el Comité de Convivencia Laboral:</strong></p>
+<ol class="doc-list">
+<li><strong>60. </strong>Asistir puntualmente a las citaciones / convocatorias que reciba por parte del Comité de Convivencia Laboral de la Empresa y prestar su colaboración suministrando de manera real y fidedigna la información solicitada de manera oficial por éste.</li>
+<li><strong>61. </strong>Acatar y cumplir los acuerdos y recomendaciones emitidos con ocasión a las investigaciones que adelante el Comité de Convivencia Laboral.</li>
+<li><strong>62. </strong>Cumplir a cabalidad con las responsabilidades y tareas asignadas, que le correspondan como miembro del COPASST y/o Comité de Convivencia laboral. Ya sea como principales o suplentes y cargo o posición que ocupe dentro del mismo.</li>
+<li><strong>63. </strong>Concurrir  cumplidamente  a  las  reuniones  generales  o  de  grupos, ordinarias o extraordinarias, convocadas por la Empresa, el COPASST o el Comité de Convivencia Laboral, y todas aquellas que se requieran con ocasión a su trabajo.</li>
+</ol>
+<h2 id="cap-17" class="chapter"><span class="chapter-label">CAPÍTULO XVII</span><span class="chapter-title">PROHIBICIONES ESPECIALES PARA LA EMPRESA Y LOS TRABAJADORES</span></h2>
+<p class="article"><strong>ARTÍCULO 62°. </strong>Se prohíbe al empleador:</p>
+<p>Deducir, retener o compensar suma alguna del monto de los salarios y prestaciones en dinero que corresponda a los trabajadores sin autorización previa de estos para cada caso o sin mandamiento judicial, con excepción de los siguientes:  </p>
+<ol class="doc-list">
+<li>Respecto de salarios pueden hacerse deducciones, retenciones o compensaciones en los casos autorizados por los artículos 113, 150,</li>
+</ol>
+<p>151, 152, y 400 del Código Sustantivo de Trabajo, en concordancia con lo establecido en la Ley 1429 de 2010 y Ley 1527 de 2012 (Normatividad de libranzas), conforme a la capacidad de endeudamiento del solicitante.</p>
+<ol class="doc-list">
+<li>Las cooperativas pueden ordenar retenciones hasta de 50% cincuenta por ciento de salarios y prestaciones, para cubrir sus créditos, en forma y en los casos en que la ley los autorice.</li>
+<li>En cuanto a la cesantía y las pensiones de jubilación, la empresa puede retener el valor respectivo en el caso del artículo 250 del Código Sustantivo de Trabajo.</li>
+</ol>
+<p>Obligar en cualquier forma a los trabajadores a comprar mercancías o víveres en almacenes que establezca la empresa.</p>
+<p><strong>c)</strong> Exigir o aceptar dinero del trabajador como gratificación para que se admita en el trabajo o por otro motivo cualquiera que se refiera a las condiciones de éste.</p>
+<p><strong>d)</strong> Limitar o presionar en cualquier forma a los trabajadores en el ejercicio de su derecho de asociación.</p>
+<p><strong>e)</strong> Imponer a los trabajadores obligaciones de carácter religioso o político o dificultarles o impedirles el ejercicio del derecho al sufragio.</p>
+<p><strong>f)</strong>   Hacer, o autorizar propaganda política en los sitios de trabajo.</p>
+<p><strong>g)</strong> Hacer o permitir todo género de rifas, colectas o suscripciones en los mismos sitios.</p>
+<p><strong>h)</strong> Emplear en las certificaciones de que trata el ordinal 7º del artículo 57 del Código Sustantivo de Trabajo signos convencionales que tienden a perjudicar a los  interesados o adoptar el sistema  de  &quot;lista  negra&quot;, cualquiera que sea la modalidad que se utilice para que no se ocupe en otras empresas a los trabajadores que se separen o sean separados del servicio.</p>
+<p><strong>i)</strong>	Cerrar intempestivamente la empresa. Si lo hiciera además de incurrir en sanciones legales deberá pagar a los trabajadores los salarios, prestaciones, e indemnizaciones por el lapso que dure cerrada la empresa. Así mismo cuando se compruebe que el empleador en forma ilegal ha retenido o disminuido colectivamente los salarios a los trabajadores, la cesación de actividades de éstos, será imputable a aquel y les dará derecho a reclamar los salarios correspondientes al tiempo de suspensión de labores.</p>
+<p><strong>j)</strong>	Despedir  sin  justa  causa  comprobada  a  los  trabajadores  que  les hubieren	presentado   pliego   de   peticiones   desde   la   fecha   de presentación del pliego y durante los términos legales de las etapas establecidas para el arreglo del conflicto.</p>
+<p><strong>k)</strong> Ejecutar o autorizar cualquier acto que vulnere o restrinja los derechos de los trabajadores o que ofenda su dignidad (artículo 59 C.S.T).</p>
+<p class="article"><strong>ARTÍCULO 63º. </strong>Se prohíbe a los trabajadores:</p>
+<p><strong>A. Sobre el Respeto, la Lealtad y la Buena Conducta:</strong></p>
+<ol class="doc-list">
+<li><strong>1.  </strong>Tratar  indebidamente  o  en  forma  descuidada  o  irrespetuosa  a  los</li>
+</ol>
+<p>Compañeros, Jefes, clientes o usuarios de la Empresa.</p>
+<ol class="doc-list">
+<li><strong>2.  </strong>Coartar la libertad para trabajar o no trabajar o para afiliarse o no a un sindicato o permanecer en él o retirarse.</li>
+<li><strong>3.  </strong>Presentar conductas que puedan ir en contra de los intereses de la empresa, o de los clientes, relacionadas con el objeto social y giro ordinario de sus negocios.</li>
+</ol>
+<p><strong>B. Sobre el Cumplimiento de las Funciones Asignadas:</strong></p>
+<ol class="doc-list">
+<li><strong>4.  </strong>Disminuir intencionalmente el ritmo de ejecución del trabajo, suspender labores, promover suspensiones intempestivas del trabajo e incitar a su declaración o mantenimiento, sea que se participe o no en ellas.</li>
+<li><strong>5.  </strong>Dejar de elaborar los informes de trabajo propios de su cargo o que se le soliciten.</li>
+<li><strong>6.  </strong>Suspender la ejecución de un trabajo sin justa causa o negarse a realizarlo.</li>
+<li><strong>7.  </strong>Cambiar métodos de trabajo sin autorización de sus superiores.</li>
+<li><strong>8.  </strong>Negarse sin causa justa a cumplir una orden del superior, siempre que ella no lesione su dignidad.</li>
+<li><strong>9.  </strong>Atender durante la jornada de trabajo asuntos u ocupaciones distintas a las que la Empresa le encomiende.</li>
+<li><strong>10. </strong>Sobre la permanencia en el sitio de trabajo, Ausencias y Visitas.</li>
+<li><strong>11. </strong>Faltar al trabajo sin justa causa o sin permiso de la empresa, excepto en los casos de huelga, en los cuales debe abandonar el lugar de trabajo.</li>
+<li><strong>12. </strong>Salir de las dependencias de la Empresa, en horas hábiles de trabajo, sin previa autorización.</li>
+<li><strong>13. </strong>Hacer cambios en los horarios de trabajo sin previa autorización del jefe.</li>
+<li><strong>14. </strong>No regresar al trabajo una vez termine la acción del permiso otorgado para consulta médica en la entidad de Seguridad Social donde se encuentre afiliado, o cualquier otra diligencia.</li>
+<li><strong>15. </strong>Atender visitas personales en horas de trabajo.</li>
+<li><strong>16. </strong>Permanecer en zonas o lugares distintos de aquellos en que realice su trabajo habitual, sin causa que lo justifique o sin autorización de la empresa, el usuario o sus representantes.</li>
+<li><strong>17. </strong>Encontrarse en el local de trabajo, sin autorización fuera de la jornada laboral.</li>
+</ol>
+<p><strong>C. Sobre el uso de Materiales, Herramientas y Equipos de Trabajo:</strong></p>
+<ol class="doc-list">
+<li><strong>18. </strong>Sustraer  del  almacén,  taller  o  establecimiento:  útiles  de  trabajo, materias primas, herramientas o productos, sin permiso de la empresa. </li>
+<li><strong>19. </strong>Usar los útiles, herramientas, equipos electrónicos, software o hardware, suministradas por la empresa en objetivos distintos al trabajo contratado (artículo 60 C.S.T).</li>
+<li><strong>20. </strong>Conservar armas de cualquier clase en el sitio de trabajo.</li>
+</ol>
+<p><strong>D.  Sobre  el  manejo  de  Documentación,  Software  y  Reserva  de  la información:</strong></p>
+<ol class="doc-list">
+<li><strong>21. </strong>Llevar fuera  de  las  dependencias  u  oficinas  de  la  Empresa,  sin autorización previa, manuales, programas (software) y documentos de cualquier naturaleza de propiedad de la Empresa, o prestarlos o fotocopiarlos sin autorización Con esepciones de aquellos cargos que lo requiere y que con autorización de la gerencia lo realicen.</li>
+<li><strong>22. </strong>Retirar documentos de los archivos, oficinas o lugar de trabajo, o revelar su contenido sin autorización expresa para ello.</li>
+</ol>
+<p><strong>23.</strong>Suministrar a terceros sin autorización expresa, papelería, especificaciones y datos relacionados con la organización, los sistemas y procedimientos de la Empresa.</p>
+<ol class="doc-list">
+<li><strong>24. </strong>Usar software sin la previa y expresa autorización de la Empresa.</li>
+</ol>
+<p><strong>E. Sobre la divulgación de Información:</strong></p>
+<ol class="doc-list">
+<li><strong>25. </strong>Escribir o fijar carteles, pancartas, o avisos de cualquier clase, en las instalaciones de la Empresa, sin previa autorización de la misma.</li>
+<li><strong>26. </strong>Hacer encuestas o distribuir impresos sin autorización de la Empresa.</li>
+<li><strong>27. </strong>Insertar   publicaciones   en   las   carteleras   que   conlleven   agravios personales a sus Directivos y trabajadores o información política de cualquier género.</li>
+<li><strong>28. </strong>Hacer  colectas,  rifas  o  suscripciones  o  cualquier  otra  clase  de propaganda en los lugares de trabajo.</li>
+<li><strong>29. </strong>Realizar   cualquier   acción   u   omisión   que   pueda   dar   origen   a reclamaciones justificadas contra la Empresa.</li>
+</ol>
+<p><strong>F. Sobre la Seguridad en el Trabajo:</strong></p>
+<ol class="doc-list">
+<li><strong>30. </strong>Ejecutar cualquier acto que ponga en peligro su seguridad, la de sus compañeros de trabajo, la de sus superiores o la de terceras personas, o que amenace o perjudique los equipos, elementos, oficinas o salas de trabajo.</li>
+</ol>
+<p><strong>G. Sobre la Seguridad y Salud en el Trabajo y Seguridad Industrial:</strong></p>
+<ol class="doc-list">
+<li><strong>31. </strong>Portar en el sitio de trabajo, aunque no los ingiera: licor, narcóticos o</li>
+</ol>
+<p>Sustancias psicoactivas.</p>
+<ol class="doc-list">
+<li><strong>32. </strong>Realizar  las  tareas  asignadas  sin  el  cumplimiento  de  las  normas  y procedimientos de Seguridad Industrial y Seguridad y salud en el trabajo.</li>
+<li><strong>33. </strong>Presentarse al trabajo en estado de embriaguez o bajo la influencia del licor o de sustancias psicoactivas, o ingerirlos durante la jornada laboral.</li>
+</ol>
+<h2 id="cap-18" class="chapter"><span class="chapter-label">CAPÍTULO XVIII</span><span class="chapter-title">LLAMADO DE ATENCIÓN</span></h2>
+<p class="article"><strong>ARTÍCULO 64°. </strong>LLAMADO DE ATENCIÓN. La Gerencia General o recursos Humanos o quien estos deleguen para el efecto, en atención a su poder subordinante, podrá realizar requerimientos verbales o escritos, a sus trabajadores, denominados LLAMADOS DE ATENCIÓN, para que realice o cumpla sus funciones. </p>
+<p>Tipos de llamados de atención.   </p>
+<p><strong>Llamado de atención verbal:</strong> EL EMPLEADOR realizará un primer acercamiento con el trabajador, con el fin de comunicarle la posible falta que está cometiendo y se advierte de lo que puede suceder si no se tiene en cuenta dicha conversación. </p>
+<p><strong>Llamado de atención escrito:</strong> Si el empleado sigue cometiendo la falta, se procede a redactar un documento en el que se exprese la posible falta que está cometiendo y los acuerdos a los que se habían llegado pero que se repitieron.  </p>
+<p>Si de manera posterior al llamado de atención por escrito, se sigue presentando la posible falta, la empresa dará inicio a un proceso disciplinario con el fin de determinar la sanción a que hubiere lugar. </p>
+<h2 id="cap-19" class="chapter"><span class="chapter-label">CAPÍTULO XIX</span><span class="chapter-title">ESCALA DE FALTAS Y SANCIONES DISCIPLINARIAS</span></h2>
+<p class="article">ARTÍCULO 65°. PRINCIPIO DE LEGALIDAD. La empresa no puede imponer a sus trabajadores sanciones no previstas en este reglamento, en pactos, convenciones colectivas, fallos arbitrales o en el contrato de trabajo. Toda sanción debe ser el resultado de un proceso donde se garantice el derecho a la defensa y la contradicción.</p>
+<p class="article">ARTÍCULO 66°. CLASIFICACIÓN DE LAS FALTAS. Los incumplimientos contractuales se clasifican en:</p>
+<p>Faltas Leves: Aquellas conductas que entorpecen el normal desarrollo de las actividades sin causar daños materiales considerables, perjuicio grave o irreparable a la empresa, la seguridad o el clima laboral. Se consideran daños materiales considerables las pérdidas económicas superiores a cincuenta mil pesos ($50.000 COP), la pérdida de clientes, o las multas y sanciones impuestas a la empresa derivadas del retardo, desorden o incumplimiento de funciones y obligaciones del trabajador. Asimismo, se considera falta leve el retardo en el ingreso de hasta diez (10) minutos sin causa justificada o sin informar previamente a la empresa, siempre que no genere los daños considerables antes mencionados.</p>
+<p>Faltas Graves: Aquellas conductas que implican una violación manifiesta de las obligaciones y prohibiciones legales o reglamentarias, que causan daños materiales considerables (según la definición del numeral anterior), perjuicio grave o irreparable a la empresa, o que ponen en riesgo la seguridad y la disciplina.</p>
+<p class="article">ARTÍCULO 67°. ESCALA DE SANCIONES Y PROCEDIMIENTO. La Empresa aplicará las sanciones de forma proporcional a la falta cometida y atendiendo a la reincidencia, bajo el siguiente esquema unificado:</p>
+<p>Para Faltas Leves:</p>
+<p>Por primera vez: Llamado de atención por escrito con copia a la hoja de vida.</p>
+<p>Por segunda vez: Suspensión del trabajo hasta por tres (3) días.</p>
+<p>Por tercera vez: Suspensión del trabajo de cuatro (4) a ocho (8) días.</p>
+<p>Por cuarta vez: La conducta se considerará Falta Grave y se procederá conforme al régimen de faltas graves, pudiendo dar lugar a la terminación del contrato por justa causa.</p>
+<p>Para Faltas Graves:</p>
+<p>Darán lugar a la suspensión del trabajo desde el primer momento (de 8 a 60 días) o a la terminación unilateral del contrato de trabajo por justa causa, según la trascendencia del hecho y los criterios de calificación establecidos en este reglamento.</p>
+<p class="article">ARTÍCULO 68°. CATÁLOGO DE FALTAS LEVES. Se consideran faltas leves, entre otras, las siguientes conductas:</p>
+<p>El retardo injustificado en la hora de entrada o el incumplimiento de los horarios de descanso/almuerzo.</p>
+<p>La falta injustificada a laborar por un (1) día, cuando no cause perjuicio de consideración.</p>
+<p>Ausentarse del puesto de trabajo o salir de las dependencias de la empresa sin previa autorización.</p>
+<p>El uso inadecuado o descuido en el manejo de materiales, herramientas, equipos o instalaciones de la empresa, siempre que no cause daños materiales considerables (según lo definido en el Artículo 66°).</p>
+<p>No diligenciar de forma oportuna y completa los formatos o la información requerida en el software de la empresa, siempre que no cause daños materiales considerables.</p>
+<p>No usar el uniforme o dotación asignada, o portarlo en mal estado o de forma incompleta.</p>
+<p>Distraer a los compañeros en horas de trabajo o mostrar displicencia en el trato con compañeros, superiores, subordinados, clientes o visitantes, siempre que no genere quejas formales o pérdida de negocio.</p>
+<p>No informar a tiempo sobre su estado de salud que pueda afectar el desempeño de sus funciones o la seguridad en el trabajo, siempre que no genere una condición de riesgo grave o un accidente.</p>
+<p>Errores por descuido que generen gastos menores o retrasos en los procesos.</p>
+<p>Ocultar faltas leves cometidas por otros compañeros.</p>
+<p>La violación de protocolos internos de la empresa que no pongan en riesgo grave la seguridad o la operación.</p>
+<p class="article">ARTÍCULO 69°. CATÁLOGO DE FALTAS GRAVES. Se consideran faltas graves, además de las previstas en la ley (Art. 62 C.S.T.), las siguientes:</p>
+<p>La reincidencia por cuarta vez en cualquier falta leve.</p>
+<p>El hurto, robo o apropiación indebida de bienes de la empresa, compañeros o clientes.</p>
+<p>El uso, porte o consumo de sustancias alucinógenas o psicotrópicas durante la jornada de trabajo, o presentarse al trabajo bajo su influjo.</p>
+<p>Actos de violencia, injuria o malos tratamientos contra superiores, compañeros, subordinados o clientes que generen quejas formales, pérdida de clientes o daño a la reputación de la empresa.</p>
+<p>Malos comportamientos en público o fuera del horario laboral que afecten gravemente la imagen y reputación de la empresa, especialmente si se utiliza la dotación o distintivos de la misma.</p>
+<p>El ocultamiento deliberado de información relevante para la operación, seguridad o cumplimiento legal de la empresa, o la falsificación de documentos o datos para beneficio propio o de terceros.</p>
+<p>La comisión de actos o condiciones inseguras que pongan en riesgo grave la integridad de las personas, los animales, las instalaciones o los bienes de la empresa, así como la violación de protocolos de seguridad y salud en el trabajo.</p>
+<p>Todo acto que ponga en peligro la seguridad de las personas, las instalaciones o los animales de la explotación agropecuaria.</p>
+<p>La revelación de secretos técnicos, comerciales o información confidencial de la empresa.</p>
+<p>El incumplimiento de las normas de Seguridad y Salud en el Trabajo que ponga en riesgo la integridad propia o ajena.</p>
+<p>Vender o comercializar productos o servicios de la competencia de ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S, aun fuera de la jornada laboral, siempre y cuando el contrato de trabajo contenga una cláusula de exclusividad que así lo prohíba.</p>
+<p>El acoso laboral o sexual debidamente comprobado.</p>
+<p>La violación de protocolos internos de la empresa que pongan en riesgo grave la seguridad, la operación o generen pérdidas considerables.</p>
+<p>Párrafo 1°. CRITERIOS DE CALIFICACIÓN. Para determinar la sanción específica dentro de los rangos establecidos, la empresa tendrá en cuenta: el grado de culpabilidad, la afectación del servicio, el nivel jerárquico, el perjuicio ocasionado y la existencia de atenuantes (como la confesión oportuna) o agravantes (como la complicidad).</p>
+<p class="article"><strong>ARTÍCULO 70</strong>°. La terminación unilateral del contrato de trabajo con justa causa por parte del empleador no es una sanción de ninguna clase, sino que constituye una facultad contractual de dicha parte, amparada en el uso de la condición resolutoria tácita prevista en el artículo 64 del C.S.T, lo que le brinda las características de ser (i) unilateral, (ii) extrajudicial, (iii) liberatoria, (iv) generadora de un derecho subjetivo potestativo, (v) con carácter receptivo y de acto causado, (vi) sometida a una declaración o manifestación de parte, y (vii) susceptible de control judicial. </p>
+<p class="article"><strong>ARTÍCULO 71</strong>°. DERECHO DE DEFENSA DEL TRABAJADOR. El trabajador tendrá la oportunidad para dar su versión de lo sucedido en su caso, como una garantía al &quot;derecho de defensa&quot; y con el fin propiciar un diálogo entre empleador y trabajador previo a la decisión de despedir, que se concreta dependiendo de las circunstancias fácticas que configuran la causal. </p>
+<p>La citación a rendir versión de lo sucedido no es la única forma de garantizar el derecho de defensa del trabajador. La garantía de este derecho de defensa se cumple también cuando el trabajador, de cualquier forma, tiene la oportunidad de hacer la exposición de su caso al empleador con el fin de asegurar que la decisión de terminación del contrato vaya precedida de un diálogo, es decir, no es de su esencia cumplir con una forma específica. (sentencia CC SU449-2020)</p>
+<h2 id="cap-20" class="chapter"><span class="chapter-label">CAPÍTULO XX</span><span class="chapter-title">PROCEDIMIENTOS PARA COMPROBACION DE FALTAS Y FORMAS DE APLICACIÓN DE LAS SANCIONES DISCIPLINARIAS</span></h2>
+<p class="article"><strong>ARTÍCULO </strong><strong>72</strong>°. DEBIDO PROCESO. El procedimiento señalado en el presente capítulo se llevará a cabo de manera tal que se garantice el derecho fundamental al debido proceso. </p>
+<p class="article"><strong>ARTÍCULO 73</strong>°. PROCEDIMIENTO PARA PROCESOS DISCIPLINARIOS: </p>
+<p>Procedimientos Disciplinarios. Para aplicar sanciones disciplinarias en QSQDOS AL BARRIL, aplicaremos el procedimiento según el número de colaboradores, conforme al artículo 7° de la Ley 2466 de 2025 y el artículo 29 de la Constitución Política: </p>
+<p>PROCESO SANCIONATORIO SIMPLIFICADO (Menos de 10 colaboradores): </p>
+<p>Responsable: jefe de Recursos Humanos o Gerente. </p>
+<p>Procedimiento: Comunicación formal de apertura, Formulación de cargos, Traslado de pruebas, Término para descargos (Mínimo 2 días hábiles), Decisión final motivada, Imposición de sanción proporcional, Derecho de impugnación.</p>
+<p>PROCESO SANCIONATORIO DE DOBLE INSTANCIA (Más de 10 colaboradores):</p>
+<p>Primera instancia: Jefe de Recursos Humanos. Segunda instancia: Gerente General. </p>
+<p>Procedimiento: Comunicación formal de apertura, Formulación de cargos detallada, Traslado de pruebas completo, Término para descargos (Mínimo 5 días hábiles), Decisión de primera instancia, Derecho de apelación, Decisión final en segunda instancia, Imposición de sanción definitiva.</p>
+<p class="article"><strong>ARTÍCULO 74º. </strong> RECURSOS CONTRA LAS MEDIDAS DISCIPLINARIAS.  En los casos de desacuerdo del trabajador con la determinación disciplinaria establecida por la empresa, podrá formular recurso de apelación por escrito ante gerencia, en un término de tres (3) días hábiles, contados a partir de la notificación de la determinación disciplinaria.</p>
+<p> El recurso impetrado, debe ser resuelto por el gerente dentro de los quince (15) días hábiles siguientes, contados a partir de la formulación de este.</p>
+<p>El documento contentivo de la decisión será notificado al trabajador por el medio más expedito teniendo en cuenta la operación del empleador, esto es, personalmente o a través de correo electrónico informado en su hoja de vida.</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1. </strong>Si el empleado se negare a recibir o firmar la comunicación en que consta la decisión adoptada y no se cuente con dirección electrónica, quien efectúe la notificación deberá dejar expresa constancia de este hecho y deberá hacer firmar dicha comunicación por un (1) testigo que será designado para el efecto.</p>
+<p class="article"><strong>ARTÍCULO 75º. </strong>CONSTANCIA HOJA DE VIDA. En todo caso se dejará constancia escrita en la hoja de vida del empleado de los hechos, del procedimiento en el cual se garantizó el debido proceso y de la decisión tomada con fundamento en éstos.</p>
+<p class="article"><strong>ARTÍCULO 76º. </strong>No producirá efecto alguno la sanción disciplinaria impuesta con violación del trámite señalado en los artículos anteriores (artículo 115 C.S.T).</p>
+<p class="paragrafo"><strong>PARÁGRAFO 1: </strong>Incurrirán en responsabilidad no sólo los autores de una falta, sino también los superiores o los jefes que la induzcan o toleren, así como aquellos que las encubran.</p>
+<p class="paragrafo"><strong>PARÁGRAFO  2:  </strong>Estas  sanciones  serán  de  aplicación  sin  perjuicio  de las responsabilidades civiles o personales que pudieran corresponder.</p>
+<h2 id="cap-21" class="chapter"><span class="chapter-label">CAPÍTULO XXI</span><span class="chapter-title">RECLAMOS PERSONAS ANTE QUIENES DEBE PRESENTARSE Y SU TRAMITACIÓN</span></h2>
+<p class="article"><strong>ARTÍCULO 77</strong>°. Los reclamos de los trabajadores se harán ante el supervisor de Gestión Humana, quien los escuchará y resolverá en justicia y equidad.</p>
+<p class="paragrafo"><strong>PARÁGRAFO: </strong>Es necesario indicar que estos reclamos no versaran sobre asuntos relacionados con acoso laboral, dado que esta obligación está reservada para el comité de convivencia laboral de la AGRICOPECUARIA LA COSECHA.</p>
+<h2 id="cap-22" class="chapter"><span class="chapter-label">CAPÍTULO XXII</span><span class="chapter-title">MECANISMOS DE PREVENCIÓN DEL ACOSO LABORAL Y PROCEDIMIENTO INTERNO DE SOLUCIÓN</span></h2>
+<p class="article"><strong>ARTÍCULO </strong><strong>78</strong><strong>°. </strong>Los mecanismos de prevención de las conductas de acoso laboral previstos por la empresa constituyen actividades tendientes a generar una conciencia colectiva, que promueva el trabajo en condiciones dignas y justas, la armonía entre quienes comparten vida laboral empresarial y el buen ambiente en la empresa y proteja la intimidad, la honra, la salud mental y la libertad de las personas en el trabajo. </p>
+<p class="article"><strong>ARTÍCULO </strong><strong>79</strong><strong>°. </strong>En desarrollo del propósito a que se refiere el artículo anterior, la empresa ha previsto los siguientes mecanismos<strong>:</strong></p>
+<p>Información a los trabajadores sobre la Ley 1010 de 2006, resolución 2646 de 2008, resolución 652 de 2012 y 1356 de 2012, resolución 2764 de 2022, que incluya campañas de divulgación preventiva, conversatorios y capacitaciones sobre el contenido de dicha ley, particularmente en relación con las conductas que constituyen acoso laboral, las que no, las circunstancias agravantes, las conductas atenuantes y el tratamiento sancionatorio.</p>
+<p>Espacios para el diálogo, círculos de participación o grupos de similar naturaleza para la evaluación periódica de vida laboral, con el fin de promover coherencia operativa y armonía funcional que faciliten y fomenten el buen trato al interior de la empresa.</p>
+<p>Diseño  y  aplicación  de  actividades  con  la  participación  de  los trabajadores, a fin de:</p>
+<p>Establecer, mediante la construcción conjunta, valores y hábitos que promuevan una vida laboral adecuada.</p>
+<p>Formular las recomendaciones constructivas a que hubiere lugar en relación con situaciones empresariales que pudieren afectar el cumplimiento de tales valores y hábitos.</p>
+<p>Examinar conductas específicas que pudieren configurar acoso laboral u otros hostigamientos en la empresa, que afecten la dignidad de las personas, señalando las recomendaciones correspondientes.</p>
+<p>d) Las demás actividades que en cualquier tiempo estableciera la empresa para desarrollar el propósito previsto en el artículo anterior.</p>
+<p>e) Conformación del Comité de Convivencia laboral, conforme a los lineamientos planteados por las Resoluciones 652 y 1356 de 2012.</p>
+<p class="article"><strong>ARTÍCULO 80°. </strong>Para los efectos relacionados con la búsqueda de solución de las conductas de acoso laboral, se establece el siguiente procedimiento interno con el cual se pretende desarrollar las características de confidencialidad, efectividad y naturaleza conciliatoria señaladas por la ley para este procedimiento:</p>
+<p><strong>a) </strong>La empresa tendrá un Comité de Convivencia Laboral, integrado en forma bipartita, por un representante de los trabajadores y un representante del empleador o su delegado. Este comité se denominará “Comité de Convivencia Laboral”, reglamentado por la Resolución 652 de 2012.</p>
+<p><strong>b) </strong>El Comité de Convivencia Laboral realizará las siguientes actividades:</p>
+<ol class="doc-list">
+<li><strong>1. </strong>Recibir y dar trámite a las quejas presentadas en las que se describan situaciones que puedan constituir acoso laboral, así como las pruebas que las soportan.</li>
+<li><strong>2.  </strong>Examinar de manera confidencial los casos específicos o puntuales en los que se formule queja o reclamo, que pudieran tipificar conductas o circunstancias de acoso laboral, al interior de la entidad pública o empresa privada.</li>
+<li><strong>3.  </strong>Escuchar a las partes involucradas de manera individual sobre los hechos que dieron lugar a la queja.</li>
+<li><strong>4.  </strong>Formular  un  plan de  mejora  concertado  entre  las  partes,  para construir, renovar y promover la convivencia laboral, garantizando en todos los casos el principio de la confidencialidad.</li>
+<li><strong>5.  </strong>Hacer  seguimiento a los  compromisos adquiridos  por las  partes involucradas en la queja, verificando su cumplimiento de acuerdo con lo pactado.</li>
+<li><strong>6.  </strong>En aquellos casos en que no se llegue a un acuerdo entre las partes, no se cumplan las recomendaciones formuladas o la conducta persista, el Comité de Convivencia Laboral, deberá remitir la queja a la  Procuraduría General  de la  Nación,  tratándose  del  sector</li>
+</ol>
+<p>público. En el sector privado, el Comité informará a la alta dirección de la empresa, cerrará el caso y el trabajador puede presentar la queja ante el inspector de trabajo o demandar ante el juez competente.</p>
+<ol class="doc-list">
+<li><strong>7.  </strong>Presentar a la alta dirección de la entidad pública o la empresa privada las recomendaciones para el desarrollo efectivo de las medidas preventivas y correctivas del acoso laboral, así como el informe anual de resultados de la gestión del comité de convivencia laboral y los informes requeridos por los organismos de control.</li>
+<li><strong>8.  </strong>Hacer seguimiento al cumplimiento de las recomendaciones dadas por el Comité de Convivencia a las dependencias de gestión del recurso humano y salud ocupacional de las empresas e instituciones públicas y privadas.</li>
+<li><strong>9.  </strong>Elaborar  informes  trimestrales  sobre  la  gestión  del  Comité  que incluya estadísticas de las quejas, seguimiento de los casos y recomendaciones, los cuales serán presentados a la alta dirección de la entidad pública o empresa privada.</li>
+<li><strong>10. </strong>Adelantar reuniones con el fin de crear un espacio de diálogo entre las partes involucradas, promoviendo compromisos mutuos para llegar a una solución efectiva de las controversias.</li>
+<li><strong>11. </strong>Las  demás  actividades  inherentes  o  conexas  con  las  funciones anteriores.</li>
+</ol>
+<p><strong>c) </strong>Este comité se reunirá una vez cada tres meses, designará de su seno un coordinador ante quien podrán presentarse las solicitudes de evaluación de situaciones eventualmente configurantes de acoso laboral con destino al análisis que debe hacer el comité, así como las sugerencias que a través del comité realizaren los miembros de la comunidad empresarial para el mejoramiento de la vida laboral.</p>
+<p><strong>d) </strong>Recibidas las solicitudes para evaluar posibles situaciones de acoso laboral, el comité en la sesión respectiva las examinará, escuchando, si a ello hubiere lugar, a las personas involucradas; construirá con tales</p>
+<p>personas la recuperación de tejido conviviente, si fuere necesario; formulará las recomendaciones que estime indispensables y, en casos especiales, promoverá entre los involucrados compromisos de convivencia.</p>
+<p><strong>e) </strong>Si  como  resultado  de  la  actuación  del  comité,  éste  considerare prudente adoptar medidas disciplinarias, dará traslado de las recomendaciones y sugerencias a los funcionarios o trabajadores competentes de la empresa, para que adelanten los procedimientos que correspondan de acuerdo con lo establecido para estos casos en la ley y en el presente reglamento.</p>
+<p><strong>f)	</strong>En todo caso, el procedimiento preventivo interno consagrado en este artículo, no impide o afecta el derecho de quien se considere víctima de acoso laboral para adelantar las acciones administrativas y judiciales establecidas para el efecto en la Ley 1010 de 2006”.</p>
+<p class="article"><strong>ARTÍCULO 81º. </strong>El procedimiento contenido en este reglamento, debe surtirse en forma confidencial y conciliatoria y tendrá como objetivo principal el de prevenir o superar las conductas que pudiesen llegar a considerarse como actos de acoso laboral.</p>
+<p>Conforme a lo anterior, todas y cada una de las personas participantes del presente procedimiento tendrá la obligación de guarda absoluta reserva y confidencialidad frente a los hechos y en relación con los participantes dentro del mismo.</p>
+<p class="article"><strong>ARTÍCULO 82°. </strong></p>
+<p class="article"><strong>ARTÍCULO 83°. </strong></p>
+<p class="article"><strong>ARTÍCULO 84°. </strong></p>
+<h2 id="cap-23" class="chapter"><span class="chapter-label">CAPÍTULO XXIV</span><span class="chapter-title">PUBLICACIONES</span></h2>
+<p class="article"><strong>ARTÍCULO 85°. </strong>Conforme a la Ley 1429 de 2010, una vez se socialice y haya transcurrido el término de quince (15) días sin que haya sido objetado el presente Reglamento; el empleador debe publicarlo en el lugar de trabajo, mediante la fijación de dos (2) copias de caracteres legibles, en dos (2) sitios distintos. Si hubiere varios lugares de trabajo separados, la fijación debe hacerse en cada uno de ellos. Con el Reglamento debe fijarse el acta de aprobación correspondiente. (artículo 119 y 120 C.S.T).</p>
+<h2 id="cap-24" class="chapter"><span class="chapter-label">CAPÍTULO XXV</span><span class="chapter-title">VIGENCIA</span></h2>
+<p class="article"><strong>ARTÍCULO 86°. </strong>El presente Reglamento entrará a regir inmediatamente sea aprobado y publicado para tales efectos.</p>
+<h2 id="cap-25" class="chapter"><span class="chapter-label">CAPÍTULO XXVI</span><span class="chapter-title">CLÁUSULAS INEFICACES</span></h2>
+<p class="article"><strong>ARTÍCULO 87°. </strong>No producirá ningún efecto las cláusulas del reglamento que desmejoren las condiciones del trabajador en relación con lo establecido en las leyes, contratos individuales, pactos, convenciones colectivas o fallos arbitrales los cuales sustituyen las disposiciones del reglamento en cuanto fueren más favorables al trabajador (artículo 109 C.S.T).</p>
+<h3 class="subtitle"><strong>POLÍTICA DE INCLUSIÓN LABORAL Y AJUSTES RAZONABLES</strong></h3>
+<p class="article"><strong>Artículo 88. Política de inclusión laboral y no discriminación.</strong></p>
+<p>La <strong>ALMACEN AGROPECUARIO LA COSECHA DE LA UNION S.A.S</strong> se compromete con la creación y mantenimiento de un entorno laboral <strong>inclusivo, seguro y equitativo</strong> para todas las personas, independientemente de su orientación sexual, identidad o expresión de género, condición de discapacidad, origen étnico, edad, nacionalidad, credo, ideología política, situación migratoria regular u otra condición protegida por la ley.</p>
+<p>La empresa reconoce la importancia de garantizar la igualdad de oportunidades y el pleno goce de los derechos laborales, por lo cual se compromete a:</p>
+<p>Implementar <strong>ajustes razonables</strong> en el lugar de trabajo. Se entiende por ajustes razonables las modificaciones o adaptaciones necesarias y adecuadas, que no impongan una carga desproporcionada o indebida, con el fin de garantizar a las personas con discapacidad el ejercicio de sus derechos en igualdad de condiciones con las demás, en los términos de la Ley 1618 de 2013 y la Ley 2466 de 2025.</p>
+<p>Fomentar un <strong>diálogo abierto y permanente</strong> con las personas trabajadoras para identificar y remover las barreras actitudinales, comunicativas, físicas, tecnológicas u organizacionales que puedan existir en el entorno laboral.</p>
+<p>Garantizar que cualquier persona trabajadora con discapacidad, o que por razones de salud, edad o situación particular lo requiera, pueda <strong>solicitar por escrito los ajustes razonables</strong> que considere necesarios para el adecuado desempeño de sus funciones, los cuales serán evaluados de buena fe por la empresa.</p>
+<p>Realizar <strong>capacitaciones periódicas</strong> para todo el personal sobre la importancia de la diversidad, la inclusión y el enfoque de derechos, promoviendo el respeto, la eliminación de estereotipos, prejuicios y prácticas discriminatorias.</p>
+<p><strong>Prohibir expresamente</strong> cualquier forma de discriminación, hostigamiento o acoso laboral basado en la orientación sexual, identidad o expresión de género, condición de discapacidad, origen étnico, nacionalidad, creencias religiosas, ideología política o cualquier otra condición protegida. Esto incluye, pero no se limita a: insultos, burlas, bromas ofensivas, comentarios despectivos, gestos, insinuaciones, miradas intimidantes u otras conductas que generen un ambiente hostil o intimidante.</p>
+<p class="paragrafo"><strong>Parágrafo. </strong>La <strong>ALMACEN AGROPECUARIO LA COSECHA DE LA UNION S.A.S</strong>: Garantizará la adopción de <strong>ajustes razonables</strong> en los procesos de selección, contratación, permanencia y promoción de trabajadores con discapacidad, de conformidad con la Ley 1618 de 2013, la Ley 2466 de 2025 y demás normas concordantes.</p>
+<p>Promoverá, en la medida de su tamaño y capacidad, la inclusión laboral de <strong>jóvenes, mujeres víctimas de violencia intrafamiliar, personas migrantes en situación migratoria regular, víctimas del conflicto armado y poblaciones en territorios priorizados</strong>, cuando ello sea compatible con la naturaleza de los cargos y las necesidades del servicio.</p>
+<p>En el evento de que, por crecimiento, la planta de personal de la empresa alcance los umbrales establecidos en la normatividad para la vinculación de un número mínimo de personas con discapacidad, la empresa se acogerá a tales obligaciones legales y reportará dicha vinculación al Ministerio del Trabajo en los términos que establezca la ley vigente.</p>
+<h2 id="cap-26" class="chapter"><span class="chapter-label">CAPÍTULO XXVII</span><span class="chapter-title">DISPOSICIONES FINALES</span></h2>
+<p class="article"><strong>ARTÍCULO 89º. </strong>Desde la fecha que entra en vigencia este reglamento, quedan sin efecto las disposiciones del reglamento que antes de esta fecha haya tenido la empresa.   </p>
+    </main>
+  </div>
+
+  <footer class="doc-footer">
+    <p>Artículo 1º — Este Reglamento Interno de Trabajo, prescrito por ALMACÉN AGROPECUARIO LA COSECHA DE LA UNIÓN S.A.S., con domicilio en el municipio de La Unión, hace parte de los contratos individuales de trabajo y se aplica a todas sus agencias y/o sucursales.</p>
+    <p>Documento de uso interno. Consulta disponible por este medio para los trabajadores de la empresa.</p>
+  </footer>
+</div>
+
+<button class="back-top" id="back-top" type="button" aria-label="Volver arriba">↑</button>
+
+<script>
+(function(){
+  var gate = document.getElementById('gate');
+  var doc = document.getElementById('doc');
+  var enterBtn = document.getElementById('enter-btn');
+
+  enterBtn.addEventListener('click', function(){
+    gate.hidden = true;
+    doc.classList.add('active');
+    window.scrollTo(0,0);
+  });
+
+  document.querySelectorAll('[data-close-toc]').forEach(function(a){
+    a.addEventListener('click', function(){
+      var details = a.closest('details.toc-mobile');
+      if(details) details.open = false;
+    });
+  });
+
+  var backTop = document.getElementById('back-top');
+  window.addEventListener('scroll', function(){
+    backTop.classList.toggle('show', window.scrollY > 600);
+  }, {passive:true});
+  backTop.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+})();
+</script>
